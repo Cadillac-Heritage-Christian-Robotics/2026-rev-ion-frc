@@ -107,9 +107,9 @@ public final class Configs {
           .outputRange(-1, 1)
           .maxMotion
           // Set MAXMotion parameters for position control
-          .maxVelocity(2000)
+          .cruiseVelocity(2000)
           .maxAcceleration(10000)
-          .allowedClosedLoopError(0.25);
+          .allowedProfileError(0.25);
 
       // Configure basic settings of the elevator motor
       elevatorConfig.idleMode(IdleMode.kCoast).smartCurrentLimit(50).voltageCompensation(12);
@@ -136,9 +136,9 @@ public final class Configs {
           .outputRange(-1, 1)
           .maxMotion
           // Set MAXMotion parameters for position control
-          .maxVelocity(4200)
+          .cruiseVelocity(4200)
           .maxAcceleration(6000)
-          .allowedClosedLoopError(0.5);
+          .allowedProfileError(0.5);
 
       // Configure basic settings of the intake motor
       intakeConfig.inverted(true).idleMode(IdleMode.kBrake).smartCurrentLimit(40);

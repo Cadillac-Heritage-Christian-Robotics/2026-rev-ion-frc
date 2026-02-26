@@ -13,10 +13,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.OIConstants;
 import frc.robot.commands.DriveForwardCommand;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.AlgaeSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.CoralSubsystem;
-import frc.robot.subsystems.CoralSubsystem.Setpoint;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
@@ -26,8 +23,6 @@ public class RobotContainer {
     // The robot's subsystems and commands are defined here...
 
     // Subsystems
-    // private final CoralSubsystem m_coralSubSystem = new CoralSubsystem();
-    // private final AlgaeSubsystem m_algaeSubsystem = new AlgaeSubsystem();
     private final IntakeSubsystem m_intake = new IntakeSubsystem();
     private final ShooterSubsystem m_shooter = new ShooterSubsystem();
 
@@ -59,12 +54,9 @@ public class RobotContainer {
     // Simple drive forward for about 2 meters for 1 seconds
     private final DriveForwardCommand m_DriveForwardCommand = new DriveForwardCommand(drivetrain);
 
-    // public RobotContainer() {
-    //     configureBindings();
-
-    //     // Set the default commands for a algae
-    //     m_algaeSubsystem.setDefaultCommand(m_algaeSubsystem.idleCommand());
-    // }
+    public RobotContainer() {
+        configureBindings();
+    }
 
      private void configureBindings() {
          // Note that X is defined as forward according to WPILib convention,
