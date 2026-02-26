@@ -17,14 +17,18 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.CoralSubsystem;
 import frc.robot.subsystems.CoralSubsystem.Setpoint;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
 
 public class RobotContainer {
 
     // The robot's subsystems and commands are defined here...
 
     // Subsystems
-    private final CoralSubsystem m_coralSubSystem = new CoralSubsystem();
-    private final AlgaeSubsystem m_algaeSubsystem = new AlgaeSubsystem();
+    // private final CoralSubsystem m_coralSubSystem = new CoralSubsystem();
+    // private final AlgaeSubsystem m_algaeSubsystem = new AlgaeSubsystem();
+    private final IntakeSubsystem m_intake = new IntakeSubsystem();
+    private final ShooterSubsystem m_shooter = new ShooterSubsystem();
 
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second
@@ -54,36 +58,36 @@ public class RobotContainer {
     // Simple drive forward for about 2 meters for 1 seconds
     private final DriveForwardCommand m_DriveForwardCommand = new DriveForwardCommand(drivetrain);
 
-    public RobotContainer() {
-        configureBindings();
+    // public RobotContainer() {
+    //     configureBindings();
 
-        // Set the default commands for a algae
-        m_algaeSubsystem.setDefaultCommand(m_algaeSubsystem.idleCommand());
-    }
+    //     // Set the default commands for a algae
+    //     m_algaeSubsystem.setDefaultCommand(m_algaeSubsystem.idleCommand());
+    // }
 
-    private void configureBindings() {
-        // Note that X is defined as forward according to WPILib convention,
-        // and Y is defined as to the left according to WPILib convention.
-        drivetrain.setDefaultCommand(
-                // Drivetrain will execute this command periodically
-                drivetrain
-                        // Drive forward with negative Y (forward)
-                        .applyRequest(() -> drive.withVelocityX(-m_driverController.getLeftY() * MaxSpeed * SlowMoDrive)
-                                // Drive left with negative X (left)
-                                .withVelocityY(-m_driverController.getLeftX() * MaxSpeed * SlowMoDrive)
-                                // Drive counterclockwise with negative X (left)
-                                .withRotationalRate(-m_driverController.getRightX() * MaxAngularRate * SlowMoTurn)));
+     private void configureBindings() {
+         // Note that X is defined as forward according to WPILib convention,
+         // and Y is defined as to the left according to WPILib convention.
+         drivetrain.setDefaultCommand(
+                 // Drivetrain will execute this command periodically
+                 drivetrain
+                         // Drive forward with negative Y (forward)
+                         .applyRequest(() -> drive.withVelocityX(-m_driverController.getLeftY() * MaxSpeed * SlowMoDrive)
+                                 // Drive left with negative X (left)
+                                 .withVelocityY(-m_driverController.getLeftX() * MaxSpeed * SlowMoDrive)
+                                 // Drive counterclockwise with negative X (left)
+                                 .withRotationalRate(-m_driverController.getRightX() * MaxAngularRate * SlowMoTurn)));
 
       
-        /* DRIVER CONTROLS */
+         /* DRIVER CONTROLS */
 
-        m_driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+    //     m_driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
-        // Left Bumper -> Run tube intake
-        m_driverController.leftBumper().whileTrue(m_coralSubSystem.runIntakeCommand());
+    //     // Left Bumper -> Run tube intake
+    //     m_driverController.leftBumper().whileTrue(m_coralSubSystem.runIntakeCommand());
 
-        // Right Bumper -> Run tube intake in reverse
-        m_driverController.rightBumper().whileTrue(m_coralSubSystem.reverseIntakeCommand());
+    //     // Right Bumper -> Run tube intake in reverse
+    //     m_driverController.rightBumper().whileTrue(m_coralSubSystem.reverseIntakeCommand());
 
         /*** OPERATOR CONTROLS ***/
 
