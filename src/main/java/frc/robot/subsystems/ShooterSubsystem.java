@@ -166,7 +166,7 @@ public class ShooterSubsystem extends SubsystemBase {
   public void periodic() {
     // Limelight hello world!s
     Boolean found_target = LimelightHelpers.getTV("");
-    SmartDashboard.putBoolean(("LL Has Target In Sights - Fire away"), found_target)
+    SmartDashboard.putBoolean(("LL Has Target In Sights - Fire away"), found_target);
     // SmartDashboard.putBoolean("LL Has Target", LimelightHelpers.getTV(""));
     SmartDashboard.putNumber("LL TX", LimelightHelpers.getTX(""));
     SmartDashboard.putNumber("LL TY", LimelightHelpers.getTY(""));
