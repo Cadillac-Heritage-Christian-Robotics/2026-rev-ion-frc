@@ -17,6 +17,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
+// Local Imports
+import frc.robot.LimelightHelpers;
+
 public class ShooterSubsystem extends SubsystemBase {
 
   // TODO: Move these to Constants.java
@@ -161,6 +164,13 @@ public class ShooterSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+    // Limelight hello world!s
+    Boolean found_target = LimelightHelpers.getTV("");
+    SmartDashboard.putBoolean(("LL Has Target In Sights - Fire away"), found_target)
+    // SmartDashboard.putBoolean("LL Has Target", LimelightHelpers.getTV(""));
+    SmartDashboard.putNumber("LL TX", LimelightHelpers.getTX(""));
+    SmartDashboard.putNumber("LL TY", LimelightHelpers.getTY(""));
+
     // Display subsystem values
     SmartDashboard.putNumber("Shooter | Feeder | Applied Output",
         feederMotor.getDutyCycle().getValueAsDouble());
