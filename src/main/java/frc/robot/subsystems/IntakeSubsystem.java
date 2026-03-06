@@ -8,6 +8,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
+import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
@@ -27,10 +28,10 @@ public class IntakeSubsystem extends SubsystemBase {
      new SparkFlex(IntakeSubsystemConstants.kIntakeMotorCanId, MotorType.kBrushless);
 
   // Initialize conveyor SPARK. We will use open loop control for this.
-  private TalonFX conveyorMotor =
-      new TalonFX(0); 
-  // private SparkFlex conveyorMotor =
-     // new SparkFlex(IntakeSubsystemConstants.kConveyorMotorCanId, MotorType.kBrushless);
+  //  private TalonFX conveyorMotor =
+  //     new TalonFX(20); 
+    private TalonFX conveyorMotor =
+     new TalonFX(IntakeSubsystemConstants.kConveyorMotorCanId);
 
   /** Creates a new IntakeSubsystem. */
   public IntakeSubsystem() {
@@ -50,12 +51,12 @@ public class IntakeSubsystem extends SubsystemBase {
         PersistMode.kPersistParameters);
     
           
-    // conveyorMotor.configure(
-      // Configs.IntakeSubsystem.conveyorConfig,
-      // ResetMode.kResetSafeParameters,
-      // PersistMode.kPersistParameters);
+    // (conveyorMotor).configure(
+    //  Configs.IntakeSubsystem.conveyorConfig,
+    //  ResetMode.kResetSafeParameters,
+    //  PersistMode.kPersistParameters);
 
-    System.out.println("---> IntakeSubsystem initialized");
+    // System.out.println("---> IntakeSubsystem initialized");
   }
 
   /** Set the intake motor power in the range of [-1, 1]. */
@@ -64,9 +65,9 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   /** Set the conveyor motor power in the range of [-1, 1]. */
-  private void setConveyorPower(double power) {
-    conveyorMotor.set(power);
-  }
+   private void setConveyorPower(double power) {
+     conveyorMotor.set(power);
+   }
 
   /**
    * Command to run the intake and conveyor motors. When the command is interrupted, e.g. the button is released,

@@ -23,6 +23,8 @@ public class RobotContainer {
     // The robot's subsystems and commands are defined here...
 
     // Subsystems
+    // private final CoralSubsystem m_coralSubSystem = new CoralSubsystem();
+    // private final AlgaeSubsystem m_algaeSubsystem = new AlgaeSubsystem();
     private final IntakeSubsystem m_intake = new IntakeSubsystem();
     private final ShooterSubsystem m_shooter = new ShooterSubsystem();
 
@@ -54,11 +56,15 @@ public class RobotContainer {
     // Simple drive forward for about 2 meters for 1 seconds
     private final DriveForwardCommand m_DriveForwardCommand = new DriveForwardCommand(drivetrain);
 
-    public RobotContainer() {
-        configureBindings();
-    }
+    // public RobotContainer() {
+    //     configureBindings();
 
-     private void configureBindings() {
+    //     // Set the default commands for a algae
+    //     m_algaeSubsystem.setDefaultCommand(m_algaeSubsystem.idleCommand());
+    // }
+
+     //private void configureBindings() 
+     {
          // Note that X is defined as forward according to WPILib convention,
          // and Y is defined as to the left according to WPILib convention.
          drivetrain.setDefaultCommand(
@@ -95,8 +101,8 @@ public class RobotContainer {
       .whileTrue(m_intake.runExtakeCommand());
 
     // Y Button -> Run intake and run the shooter flywheel and feeder
-    m_operatorController.y().toggleOnTrue(m_shooter.runShooterCommand().alongWith(m_intake.runIntakeCommand()));
-
+    m_operatorController.y().toggleOnTrue(m_shooter.runShooterCommand().alongWith(m_intake.runExtakeCommand()));
+    m_operatorController.x().toggleOnTrue(m_shooter.runShooterCommand());
 
         // B Button -> Elevator/Arm to human player position, set ball intake to stow when idle
         
