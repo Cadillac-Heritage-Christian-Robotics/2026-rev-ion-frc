@@ -77,7 +77,7 @@ public class IntakeSubsystem extends SubsystemBase {
     return this.startEnd(
         () -> {
           this.setIntakePower(IntakeSetpoints.kIntake);
-          this.setConveyorPower(ConveyorSetpoints.kIntake);
+          this.setConveyorPower(ConveyorSetpoints.kExtake);
         }, () -> {
           this.setIntakePower(0.0);
           this.setConveyorPower(0.0);
@@ -92,7 +92,7 @@ public class IntakeSubsystem extends SubsystemBase {
     return this.startEnd(
         () -> {
           this.setIntakePower(IntakeSetpoints.kExtake);
-          this.setConveyorPower(ConveyorSetpoints.kExtake);
+          this.setConveyorPower(ConveyorSetpoints.kIntake);
         }, () -> {
           this.setIntakePower(0.0);
           this.setConveyorPower(0.0);

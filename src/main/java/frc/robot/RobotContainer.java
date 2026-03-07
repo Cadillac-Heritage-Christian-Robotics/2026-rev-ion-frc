@@ -80,7 +80,7 @@ public class RobotContainer {
       
          /* DRIVER CONTROLS */
 
-    //     m_driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+        m_driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
     //     // Left Bumper -> Run tube intake
     //     m_driverController.leftBumper().whileTrue(m_coralSubSystem.runIntakeCommand());

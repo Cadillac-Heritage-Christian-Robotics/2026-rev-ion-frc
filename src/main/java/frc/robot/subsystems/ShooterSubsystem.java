@@ -9,6 +9,7 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 
 import edu.wpi.first.math.MathUtil;
@@ -54,6 +55,7 @@ public class ShooterSubsystem extends SubsystemBase {
     // TODO: Tune these PID/MotionMagic values for your robot!
     flywheelConfig.Slot0.kP = 0.1;
     flywheelConfig.Slot0.kI = 0.0;
+    flywheelConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     flywheelConfig.Slot0.kD = 0.0;
     flywheelConfig.Slot0.kV = 0.12; // Feedforward: ~1/kMaxRPS
     flywheelConfig.MotionMagic.MotionMagicAcceleration = 400; // RPS/s
@@ -70,6 +72,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
     // Configure feeder motor
     TalonFXConfiguration feederConfig = new TalonFXConfiguration();
+    feederConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     feederMotor.getConfigurator().apply(feederConfig);
 
     // Zero flywheel encoder on initialization
