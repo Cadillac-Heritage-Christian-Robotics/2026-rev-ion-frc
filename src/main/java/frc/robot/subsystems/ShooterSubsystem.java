@@ -9,6 +9,7 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 
 import edu.wpi.first.math.MathUtil;
@@ -17,12 +18,15 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
+// Local Imports
+import frc.robot.LimelightHelpers;
+
 public class ShooterSubsystem extends SubsystemBase {
 
   // TODO: Move these to Constants.java
-  private static final int kFlywheelMotorCanId = 6;
-  private static final int kFlywheelFollowerMotorCanId = 7;
-  private static final int kFeederMotorCanId = 5;
+  private static final int kFlywheelMotorCanId = 21;
+  private static final int kFlywheelFollowerMotorCanId = 23;
+  private static final int kFeederMotorCanId = 22;
 
   // TODO: Phoenix6 velocity is in rotations per second - tune this value!
   // Original was 5000 RPM ≈ 83.3 RPS
@@ -51,6 +55,7 @@ public class ShooterSubsystem extends SubsystemBase {
     // TODO: Tune these PID/MotionMagic values for your robot!
     flywheelConfig.Slot0.kP = 0.1;
     flywheelConfig.Slot0.kI = 0.0;
+    flywheelConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     flywheelConfig.Slot0.kD = 0.0;
     flywheelConfig.Slot0.kV = 0.12; // Feedforward: ~1/kMaxRPS
     flywheelConfig.MotionMagic.MotionMagicAcceleration = 400; // RPS/s
@@ -63,10 +68,11 @@ public class ShooterSubsystem extends SubsystemBase {
 
     // TODO: Use Aligned if the motors are mounted the same direction, 
     // TODO: Opposed if they're mirrored facing each other
-    flywheelFollowerMotor.setControl(new Follower(flywheelMotor.getDeviceID(), MotorAlignmentValue.Aligned));
+    flywheelFollowerMotor.setControl(new Follower(flywheelMotor.getDeviceID(), MotorAlignmentValue.Opposed));
 
     // Configure feeder motor
     TalonFXConfiguration feederConfig = new TalonFXConfiguration();
+    feederConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     feederMotor.getConfigurator().apply(feederConfig);
 
     // Zero flywheel encoder on initialization
@@ -161,6 +167,13 @@ public class ShooterSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+    // Limelight hello world!s
+    Boolean found_target = LimelightHelpers.getTV("");
+    SmartDashboard.putBoolean(("LL Has Target In Sights - Fire away"), found_target);
+    // SmartDashboard.putBoolean("LL Has Target", LimelightHelpers.getTV(""));
+    SmartDashboard.putNumber("LL TX", LimelightHelpers.getTX(""));
+    SmartDashboard.putNumber("LL TY", LimelightHelpers.getTY(""));
+
     // Display subsystem values
     SmartDashboard.putNumber("Shooter | Feeder | Applied Output",
         feederMotor.getDutyCycle().getValueAsDouble());
@@ -180,4 +193,18 @@ public class ShooterSubsystem extends SubsystemBase {
     SmartDashboard.putBoolean("Is Flywheel Spinning", isFlywheelSpinning.getAsBoolean());
     SmartDashboard.putBoolean("Is Flywheel Stopped", isFlywheelStopped.getAsBoolean());
   }
+
+  //  @Override
+  //  public void simulationPeriodic() {
+  //   // TODO Auto-generated method stub
+  //   // super.simulationPeriodic();
+  //   // System.out.println("Running simulation periodic");
+  //   Boolean found_target = LimelightHelpers.getTV("limelight");
+  //   // System.out.println(found_target);
+  //   SmartDashboard.putBoolean(("LL Has Target In Sights - Fire away"), found_target);
+  //   // SmartDashboard.putBoolean("LL Has Target", LimelightHelpers.getTV(""));
+  //   SmartDashboard.putNumber("LL TX", LimelightHelpers.getTX(""));
+  //   SmartDashboard.putNumber("LL TY", LimelightHelpers.getTY(""));
+
+  // }
 }
