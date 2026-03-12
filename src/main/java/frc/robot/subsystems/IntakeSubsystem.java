@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Configs;
 import frc.robot.Constants.IntakeSubsystemConstants;
+import frc.robot.Constants.IntakeSubsystemConstants.ArmSetpoints;
 import frc.robot.Constants.IntakeSubsystemConstants.ConveyorSetpoints;
 import frc.robot.Constants.IntakeSubsystemConstants.IntakeSetpoints;
 
@@ -26,6 +27,9 @@ public class IntakeSubsystem extends SubsystemBase {
   // Initialize intake SPARK. We will use open loop control for this. 
   private SparkFlex intakeMotor =
      new SparkFlex(IntakeSubsystemConstants.kIntakeMotorCanId, MotorType.kBrushless);
+
+  private SparkFlex slapMotor =
+   new SparkFlex(IntakeSubsystemConstants.kSlapMotorCanId, MotorType.kBrushless);
 
   // Initialize conveyor SPARK. We will use open loop control for this.
   //  private TalonFX conveyorMotor =
@@ -51,10 +55,10 @@ public class IntakeSubsystem extends SubsystemBase {
         PersistMode.kPersistParameters);
     
           
-    // (conveyorMotor).configure(
-    //  Configs.IntakeSubsystem.conveyorConfig,
-    //  ResetMode.kResetSafeParameters,
-    //  PersistMode.kPersistParameters);
+    slapMotor.configure(
+      Configs.IntakeSubsystem.intakeConfig,
+      ResetMode.kResetSafeParameters,
+      PersistMode.kPersistParameters);
 
     // System.out.println("---> IntakeSubsystem initialized");
   }
