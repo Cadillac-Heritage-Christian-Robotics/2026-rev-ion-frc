@@ -103,6 +103,8 @@ public class RobotContainer {
     // Y Button -> Run intake and run the shooter flywheel and feeder
     m_operatorController.y().toggleOnTrue(m_shooter.runShooterCommand().alongWith(m_intake.runExtakeCommand()));
     m_operatorController.x().toggleOnTrue(m_shooter.runShooterCommand());
+    m_operatorController.a().toggleOnTrue(m_intake.runSlapUpCommand());
+    m_operatorController.b().toggleOnTrue(m_intake.runSlapDownCommand());
 
         // B Button -> Elevator/Arm to human player position, set ball intake to stow when idle
         
@@ -120,7 +122,7 @@ public class RobotContainer {
         //         .alongWith(m_algaeSubsystem.stowCommand()));
 
         // // A Button -> Elevator/Arm to level 2 position
-        // m_operatorController.a().onTrue(m_coralSubSystem.setSetpointCommand(Setpoint.kLevel2));
+         //m_operatorController.a().onTrue(m_intakeSubSystem.setSetpointCommand(Setpoint.kLevel2));
 
         // // X Button -> Elevator/Arm to level 3 position
         // m_operatorController.x().onTrue(m_coralSubSystem.setSetpointCommand(Setpoint.kLevel3));
