@@ -68,6 +68,10 @@ public class IntakeSubsystem extends SubsystemBase {
     intakeMotor.set(power);
   }
 
+  private void setSlapPower(double power) {
+    slapMotor.set(power);
+  }  
+
   /** Set the conveyor motor power in the range of [-1, 1]. */
    private void setConveyorPower(double power) {
      conveyorMotor.set(power);
@@ -87,6 +91,15 @@ public class IntakeSubsystem extends SubsystemBase {
           this.setConveyorPower(0.0);
         }).withName("Intaking");
   }
+
+  public Command runSlapCommand() {
+    return this.startEnd(
+      () -> {
+        this.setSlapPower(ArmSetpoints.kLevel1);
+      }, () -> {
+        this.setSlapPower(0.0);
+      }).withName(Upward);
+    }
 
   /**
    * Command to reverse the intake motor and coveyor motors. When the command is interrupted, e.g. the button is
