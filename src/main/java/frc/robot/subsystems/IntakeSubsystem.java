@@ -98,7 +98,7 @@ public class IntakeSubsystem extends SubsystemBase {
   public Command runSlapUpCommand() {
     return this.startEnd(
       () -> {
-        this.setSlapPower(ArmSetpoints.kLevel1);
+        this.setSlapPower(ArmSetpoints.kLevel2);
       }, () -> {
         this.setSlapPower(0.0);
       }).withName("Upward");
@@ -107,7 +107,7 @@ public class IntakeSubsystem extends SubsystemBase {
    public Command runSlapDownCommand() {
     return this.startEnd(
       () -> {
-        this.setSlapPower(ArmSetpoints.kLevel2);
+        this.setSlapPower(ArmSetpoints.kLevel1);
       }, () -> {
         this.setSlapPower(0.0);
       }).withName("Downward");
