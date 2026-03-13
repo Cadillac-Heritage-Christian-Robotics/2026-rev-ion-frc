@@ -103,6 +103,8 @@ public class RobotContainer {
     // Y Button -> Run intake and run the shooter flywheel and feeder
     m_operatorController.y().toggleOnTrue(m_shooter.runShooterCommand().alongWith(m_intake.runExtakeCommand()));
     m_operatorController.x().toggleOnTrue(m_shooter.runShooterCommand());
+    m_operatorController.a().toggleOnTrue(m_intake.runSlapUpCommand());
+    m_operatorController.b().toggleOnTrue(m_intake.runSlapDownCommand());
 
         // B Button -> Elevator/Arm to human player position, set ball intake to stow when idle
         

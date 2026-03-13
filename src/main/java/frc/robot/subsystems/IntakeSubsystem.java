@@ -95,13 +95,22 @@ public class IntakeSubsystem extends SubsystemBase {
         }).withName("Intaking");
   }
 
-  public Command runSlapCommand() {
+  public Command runSlapUpCommand() {
     return this.startEnd(
       () -> {
         this.setSlapPower(ArmSetpoints.kLevel1);
       }, () -> {
         this.setSlapPower(0.0);
-      }).withName(Upward);
+      }).withName("Upward");
+    }
+
+   public Command runSlapDownCommand() {
+    return this.startEnd(
+      () -> {
+        this.setSlapPower(ArmSetpoints.kLevel2);
+      }, () -> {
+        this.setSlapPower(0.0);
+      }).withName("Downward");
     }
 
   /**
