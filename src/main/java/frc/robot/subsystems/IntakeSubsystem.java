@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Configs;
 import frc.robot.Constants.IntakeSubsystemConstants;
+import frc.robot.Constants.IntakeSubsystemConstants.ArmSetpoints;
 import frc.robot.Constants.IntakeSubsystemConstants.ConveyorSetpoints;
 import frc.robot.Constants.IntakeSubsystemConstants.IntakeSetpoints;
 
@@ -25,6 +26,9 @@ public class IntakeSubsystem extends SubsystemBase {
   // Initialize intake SPARK. We will use open loop control for this. 
   private SparkFlex intakeMotor =
      new SparkFlex(IntakeSubsystemConstants.kIntakeMotorCanId, MotorType.kBrushless);
+
+  private SparkFlex slapMotor =
+   new SparkFlex(IntakeSubsystemConstants.kSlapMotorCanId, MotorType.kBrushless);
 
   // Initialize conveyor SPARK. We will use open loop control for this.
   //  private TalonFX conveyorMotor =
@@ -49,6 +53,11 @@ public class IntakeSubsystem extends SubsystemBase {
         ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
     
+    slapMotor.configure(
+      Configs.IntakeSubsystem.intakeConfig,
+      ResetMode.kResetSafeParameters,
+      PersistMode.kPersistParameters);
+
     conveyorConfig.CurrentLimits.StatorCurrentLimit = 40;
     conveyorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
     conveyorMotor.getConfigurator().apply(conveyorConfig);
@@ -60,6 +69,10 @@ public class IntakeSubsystem extends SubsystemBase {
   private void setIntakePower(double power) {
     intakeMotor.set(power);
   }
+
+  private void setSlapPower(double power) {
+    slapMotor.set(power);
+  }  
 
   /** Set the conveyor motor power in the range of [-1, 1]. */
    private void setConveyorPower(double power) {
@@ -80,6 +93,24 @@ public class IntakeSubsystem extends SubsystemBase {
           this.setConveyorPower(0.0);
         }).withName("Intaking");
   }
+
+  public Command runSlapUpCommand() {
+    return this.startEnd(
+      () -> {
+        this.setSlapPower(ArmSetpoints.kLevel2);
+      }, () -> {
+        this.setSlapPower(0.0);
+      }).withName("Upward");
+    }
+
+   public Command runSlapDownCommand() {
+    return this.startEnd(
+      () -> {
+        this.setSlapPower(ArmSetpoints.kLevel1);
+      }, () -> {
+        this.setSlapPower(0.0);
+      }).withName("Downward");
+    }
 
   /**
    * Command to reverse the intake motor and coveyor motors. When the command is interrupted, e.g. the button is
