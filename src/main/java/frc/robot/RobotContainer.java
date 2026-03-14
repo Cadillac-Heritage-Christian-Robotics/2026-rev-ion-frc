@@ -56,14 +56,14 @@ public class RobotContainer {
     // Simple drive forward for about 2 meters for 1 seconds
     private final DriveForwardCommand m_DriveForwardCommand = new DriveForwardCommand(drivetrain);
 
-    // public RobotContainer() {
-    //     configureBindings();
+     public RobotContainer() {
+         configureBindings();
 
     //     // Set the default commands for a algae
     //     m_algaeSubsystem.setDefaultCommand(m_algaeSubsystem.idleCommand());
-    // }
+     }
 
-     //private void configureBindings() 
+     private void configureBindings() 
      {
          // Note that X is defined as forward according to WPILib convention,
          // and Y is defined as to the left according to WPILib convention.
