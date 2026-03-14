@@ -6,22 +6,29 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.io.IOException;
+
+import org.json.simple.parser.ParseException;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.util.FileVersionException;
 
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.OIConstants;
-import frc.robot.commands.AutonCommands;
 import frc.robot.commands.DriveForwardCommand;
+import frc.robot.commands.DriveToPoseCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 
@@ -171,7 +178,14 @@ public class RobotContainer {
     } // end of configureBindings
 
     public Command getAutonomousCommand() {
-        return AutoBuilder.buildAuto("Foo").repeatedly();
+        try {
+            PathPlannerPath path = PathPlannerPath.fromPathFile("ShootReload");
+            return AutoBuilder.pathfindThenFollowPath(path, DriveToPoseCommand.CONSTRAINTS)
+                .repeatedly();
+        } catch (FileVersionException | IOException | ParseException e) {
+            e.printStackTrace();
+            // Fall back to just driving forward if path fails to load
+            return m_DriveForwardCommand;
+        }
     }
-
 } // end of RobotContainer
