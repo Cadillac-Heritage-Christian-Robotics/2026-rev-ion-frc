@@ -22,8 +22,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 public final class Constants {
   //Fuel Intake
   public static final class IntakeSubsystemConstants {
-    public static final int kIntakeMotorCanId = 6;    // SPARK Flex CAN ID
-    public static final int kSlapMotorCanId = 0;
+    public static final int kIntakeMotorCanId = 5;    // SPARK Flex CAN ID
+    public static final int kSlapMotorCanId = 6;
     public static final int kConveyorMotorCanId = 20;  // SPARK Flex CAN ID
 
     public static final class IntakeSetpoints {
@@ -32,8 +32,8 @@ public final class Constants {
     }
 
     public static final class ArmSetpoints {
-      public static final double kLevel1 = 0;
-      public static final double kLevel2 = 2;
+      public static final double kLevel1 = 0.1;
+      public static final double kLevel2 = -0.1;
     }
 
     public static final class ConveyorSetpoints {
