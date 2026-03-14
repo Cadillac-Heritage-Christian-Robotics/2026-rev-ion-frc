@@ -9,11 +9,13 @@ import static edu.wpi.first.units.Units.*;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.OIConstants;
+import frc.robot.commands.AutonCommands;
 import frc.robot.commands.DriveForwardCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -84,10 +86,19 @@ public class RobotContainer {
             drivetrain
         );
 
-        configureBindings();
-
         // Set the default commands for a algae
         // m_algaeSubsystem.setDefaultCommand(m_algaeSubsystem.idleCommand());
+        // Register named commands for PathPlanner
+        NamedCommands.registerCommand("StartIntake",  m_intake.runIntakeCommand());
+        NamedCommands.registerCommand("StopIntake",   m_intake.runExtakeCommand());
+        NamedCommands.registerCommand("SlapUp",       m_intake.runSlapUpCommand().withTimeout(0.5)); // TODO add stop logic
+        NamedCommands.registerCommand("SlapDown",     m_intake.runSlapDownCommand().withTimeout(0.5)); // TODO add stop logic
+        NamedCommands.registerCommand("StartShoot",   m_shooter.runShooterCommand());
+        NamedCommands.registerCommand("StopShoot",    m_shooter.runOnce(() -> {}));
+
+        // NamedCommands.registerCommand("full_auton", AutonCommands.getAutonomousCommand());
+
+        configureBindings();
     }
 
      private void configureBindings() {
@@ -160,7 +171,7 @@ public class RobotContainer {
     } // end of configureBindings
 
     public Command getAutonomousCommand() {
-        return m_DriveForwardCommand;
+        return AutoBuilder.buildAuto("Foo").repeatedly();
     }
 
 } // end of RobotContainer
