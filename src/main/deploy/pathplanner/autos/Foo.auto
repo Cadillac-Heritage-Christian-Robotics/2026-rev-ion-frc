@@ -13,7 +13,37 @@
         {
           "type": "named",
           "data": {
-            "name": null
+            "name": "StartIntake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "SlapArmUp"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "SlapArmDown"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StopIntake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StartShoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StopShoot"
           }
         }
       ]

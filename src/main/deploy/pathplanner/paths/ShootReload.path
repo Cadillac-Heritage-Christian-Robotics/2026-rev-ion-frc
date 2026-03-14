@@ -63,7 +63,50 @@
   "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "StartShoot",
+      "waypointRelativePos": 0.0,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "StopShoot",
+      "waypointRelativePos": 0,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "StartShoot",
+      "waypointRelativePos": 0.25753524250788506,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "SlapArmDown",
+      "waypointRelativePos": 0.5423895899053623,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "StartIntake",
+      "waypointRelativePos": 0.5780818710567821,
+      "endWaypointRelativePos": 0,
+      "command": null
+    },
+    {
+      "name": "SlapArmUp",
+      "waypointRelativePos": 2.2791305205047316,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "StopIntake",
+      "waypointRelativePos": 2.457314668769716,
+      "endWaypointRelativePos": null,
+      "command": null
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
