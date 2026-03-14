@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -60,52 +62,15 @@ public final class Constants {
     public static final double kVortexKv = 565;   // rpm/V
   }
 
+  public static final class TargetPositions {
+    // Alliance shoot positions
+    public static final Pose2d BLUE_SHOOT = new Pose2d(3.0, 4.1, new Rotation2d());
+    public static final Pose2d RED_SHOOT  = new Pose2d(13.5, 4.1, new Rotation2d());
 
-  /***** CORAL *******************/
-  // public static final class CoralSubsystemConstants {
-  //   public static final int kElevatorMotorCanId = 5;
-  //   public static final int kArmMotorCanId = 2;
-  //   public static final int kIntakeMotorCanId = 3;
-
-  //   public static final class ElevatorSetpoints {
-  //     public static final int kFeederStation = 0;
-  //     public static final int kLevel1 = 0;
-  //     public static final int kLevel2 = 0;
-  //     public static final int kLevel3 = 100;
-  //     public static final int kLevel4 = 150;
-  //   }
-
-  //   public static final class ArmSetpoints {
-  //     public static final double kFeederStation = 33;
-  //     public static final double kLevel1 = 0;
-  //     public static final double kLevel2 = 2;
-  //     public static final double kLevel3 = 2;
-  //     public static final double kLevel4 = 19;
-  //   }
-
-  //   public static final class IntakeSetpoints {
-  //     public static final double kForward = 0.5;
-  //     public static final double kReverse = -0.5;
-  //   }
-  // }
-
-  // /***** ALGAE *******************/
-  // public static final class AlgaeSubsystemConstants {
-  //   public static final int kIntakeMotorCanId = 6;
-  //   public static final int kPivotMotorCanId = 4;
-
-  //   public static final class ArmSetpoints {
-  //     public static final double kStow = 18.5;
-  //     public static final double kHold = 11.5;
-  //     public static final double kDown = 0;
-  //   }
-
-  //   public static final class IntakeSetpoints {
-  //     public static final double kForward = 0.5;
-  //     public static final double kReverse = -0.5;
-  //     public static final double kHold = 0.25;
-  //   }
-  // }
+    // Reload poles
+    public static final Pose2d NORTH_POLE = new Pose2d(8.23, 7.2, new Rotation2d());
+    public static final Pose2d SOUTH_POLE = new Pose2d(8.23, 1.0, new Rotation2d());
+  }
 
    /** OIConstants ****/
    public static final class OIConstants {
@@ -114,6 +79,7 @@ public final class Constants {
      public static final double kTriggerButtonThreshold = 0.2;
    }
 
+<<<<<<< Updated upstream
 
   // public static final double kNEOFreeSpeedRpm = 5676;
  
@@ -146,3 +112,6 @@ public final class Constants {
   //   public static final double kIntakeBarAngleRads = Units.degreesToRadians(-60);
   // }
 }
+=======
+}
+>>>>>>> Stashed changes

@@ -8,12 +8,17 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.OIConstants;
 import frc.robot.commands.DriveForwardCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
@@ -56,15 +61,36 @@ public class RobotContainer {
     // Simple drive forward for about 2 meters for 1 seconds
     private final DriveForwardCommand m_DriveForwardCommand = new DriveForwardCommand(drivetrain);
 
-    // public RobotContainer() {
-    //     configureBindings();
+    public RobotContainer() {
+        // Configure AutoBuilder for PathPlanner
+        AutoBuilder.configure(
+            () -> drivetrain.getState().Pose,           // how to get current pose
+            drivetrain::resetPose,                       // how to reset pose
+            () -> drivetrain.getState().Speeds,          // current chassis speeds
+            (speeds, feedforwards) -> drivetrain.setControl(  // how to drive
+                new SwerveRequest.ApplyRobotSpeeds()
+                    .withSpeeds(speeds)
+                    .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
+                    .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
+            ),
+            new PPHolonomicDriveController(
+                new PIDConstants(5.0, 0, 0),   // translation PID
+                new PIDConstants(5.0, 0, 0)    // rotation PID
+            ),
+            TunerConstants.PP_CONFIG,           // robot config
+            () -> DriverStation.getAlliance()
+                    .filter(a -> a == Alliance.Red)
+                    .isPresent(),               // flip paths for red alliance
+            drivetrain
+        );
 
-    //     // Set the default commands for a algae
-    //     m_algaeSubsystem.setDefaultCommand(m_algaeSubsystem.idleCommand());
-    // }
+        configureBindings();
 
-     //private void configureBindings() 
-     {
+        // Set the default commands for a algae
+        // m_algaeSubsystem.setDefaultCommand(m_algaeSubsystem.idleCommand());
+    }
+
+     private void configureBindings() {
          // Note that X is defined as forward according to WPILib convention,
          // and Y is defined as to the left according to WPILib convention.
          drivetrain.setDefaultCommand(
