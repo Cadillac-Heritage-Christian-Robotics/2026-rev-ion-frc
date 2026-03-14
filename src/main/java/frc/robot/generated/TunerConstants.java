@@ -8,10 +8,14 @@ import com.ctre.phoenix6.hardware.*;
 import com.ctre.phoenix6.signals.*;
 import com.ctre.phoenix6.swerve.*;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.*;
+import com.pathplanner.lib.config.ModuleConfig;
+import com.pathplanner.lib.config.RobotConfig;
 
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.*;
 
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -281,6 +285,32 @@ public class TunerConstants {
                 drivetrainConstants, odometryUpdateFrequency,
                 odometryStandardDeviation, visionStandardDeviation, modules
             );
+        }
+    }
+
+public static final RobotConfig PP_CONFIG;
+    static {
+        try {
+            PP_CONFIG = new RobotConfig(
+                45.36,                             // robot mass in kg (100 lbs) TODO tune this!
+                6.0,                               // moment of inertia (tune later) TODO tune this!
+                new ModuleConfig(
+                    kWheelRadius.in(Meters),       // wheel radius in meters
+                    kSpeedAt12Volts.in(MetersPerSecond), // max speed
+                    1.2,                           // wheel COF (carpet estimate)
+                    DCMotor.getKrakenX60Foc(1)
+                        .withReduction(kDriveGearRatio),
+                    kSlipCurrent.in(Amps),         // 120A
+                    1                              // 1 drive motor per module
+                ),
+                // Module positions FL, FR, BL, BR (all 15" from center) TODO verify this!
+                new Translation2d(Inches.of(15).in(Meters), Inches.of(15).in(Meters)),
+                new Translation2d(Inches.of(15).in(Meters), Inches.of(-15).in(Meters)),
+                new Translation2d(Inches.of(-15).in(Meters), Inches.of(15).in(Meters)),
+                new Translation2d(Inches.of(-15).in(Meters), Inches.of(-15).in(Meters))
+            );
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }

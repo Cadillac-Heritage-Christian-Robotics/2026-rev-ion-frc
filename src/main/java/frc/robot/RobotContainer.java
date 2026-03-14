@@ -6,21 +6,40 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.io.IOException;
+
+import org.json.simple.parser.ParseException;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.util.FileVersionException;
 
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.OIConstants;
 import frc.robot.commands.DriveForwardCommand;
+import frc.robot.commands.DriveToPoseCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 
 public class RobotContainer {
 
     // The robot's subsystems and commands are defined here...
+    private final SendableChooser<String> m_autoChooser = new SendableChooser<>();
+
 
     // Subsystems
     // private final CoralSubsystem m_coralSubSystem = new CoralSubsystem();
@@ -56,15 +75,52 @@ public class RobotContainer {
     // Simple drive forward for about 2 meters for 1 seconds
     private final DriveForwardCommand m_DriveForwardCommand = new DriveForwardCommand(drivetrain);
 
-     public RobotContainer() {
-         configureBindings();
+    public RobotContainer() {
+        // Configure AutoBuilder for PathPlanner
+        AutoBuilder.configure(
+            () -> drivetrain.getState().Pose,           // how to get current pose
+            drivetrain::resetPose,                       // how to reset pose
+            () -> drivetrain.getState().Speeds,          // current chassis speeds
+            (speeds, feedforwards) -> drivetrain.setControl(  // how to drive
+                new SwerveRequest.ApplyRobotSpeeds()
+                    .withSpeeds(speeds)
+                    .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
+                    .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
+            ),
+            new PPHolonomicDriveController(
+                new PIDConstants(5.0, 0, 0),   // translation PID
+                new PIDConstants(5.0, 0, 0)    // rotation PID
+            ),
+            TunerConstants.PP_CONFIG,           // robot config
+            () -> DriverStation.getAlliance()
+                    .filter(a -> a == Alliance.Red)
+                    .isPresent(),               // flip paths for red alliance
+            drivetrain
+        );
 
-    //     // Set the default commands for a algae
-    //     m_algaeSubsystem.setDefaultCommand(m_algaeSubsystem.idleCommand());
-     }
+        // Set the default commands for a algae
+        // m_algaeSubsystem.setDefaultCommand(m_algaeSubsystem.idleCommand());
+        // Register named commands for PathPlanner
+        NamedCommands.registerCommand("StartIntake",  m_intake.runIntakeCommand());
+        NamedCommands.registerCommand("StopIntake",   m_intake.runOnce(() -> {}));
+        NamedCommands.registerCommand("SlapArmUp",    m_intake.runSlapUpCommand().withTimeout(0.5)); // TODO add stop logic
+        NamedCommands.registerCommand("SlapArmDown",  m_intake.runSlapDownCommand().withTimeout(0.5)); // TODO add stop logic
+        NamedCommands.registerCommand("StartShoot",   m_shooter.runShooterCommand());
+        NamedCommands.registerCommand("StopShoot",    m_shooter.runOnce(() -> {}));
 
-     private void configureBindings() 
-     {
+        // Register your path options
+        m_autoChooser.setDefaultOption("Reload North South A", "ReloadNorthSouthA");
+        m_autoChooser.addOption("Reload North South B", "ReloadNorthSouthB");
+        m_autoChooser.addOption("TODO Reload from cache", null);
+
+        // Push it to SmartDashboard so drive team can see it
+        SmartDashboard.putData("Auto Path", m_autoChooser);
+
+
+        configureBindings();
+    }
+
+     private void configureBindings() {
          // Note that X is defined as forward according to WPILib convention,
          // and Y is defined as to the left according to WPILib convention.
          drivetrain.setDefaultCommand(
@@ -134,7 +190,39 @@ public class RobotContainer {
     } // end of configureBindings
 
     public Command getAutonomousCommand() {
-        return m_DriveForwardCommand;
-    }
+        try {
+            String selectedPath = m_autoChooser.getSelected();
+            // Handle the drive forward fallback if null selected
+            if (selectedPath == null) return m_DriveForwardCommand; // TODO - better default!
 
+            PathPlannerPath path = PathPlannerPath.fromPathFile(selectedPath);
+
+            // Step 1: Wait a moment for Limelight to get a confident pose fix (one time only)
+            Command waitForPose = new WaitCommand(0.5);
+
+            // Repeating loop: drive to shoot, shoot, reload
+            Command loop = new SequentialCommandGroup(
+
+                // Step 2: Pathfind to the shoot position (AutonUtils already knows Blue vs Red!)
+                new DriveToPoseCommand(AutonUtils.getShootPosition()),
+
+                // Step 3: Shoot for a fixed time
+                m_shooter.runShooterCommand().withTimeout(3.0), // TODO calibrate for time to shoot 8 ammo
+
+                // Step 4: Then run the ReloadNorthSouthA loop
+                // Drives to neutral zone north slightly off center favoring alliance side
+                // Drives to neutral zone south in a straight line
+                // Drives back to original shooting position
+                // Takes into account raising and lower of slap arm over Ramp and activating intake in neutral zone!
+                AutoBuilder.followPath(path)
+
+            ).repeatedly();
+
+            return new SequentialCommandGroup(waitForPose, loop);
+
+        } catch (FileVersionException | IOException | ParseException e) {
+            e.printStackTrace();
+            return m_DriveForwardCommand;
+        }
+    }
 } // end of RobotContainer

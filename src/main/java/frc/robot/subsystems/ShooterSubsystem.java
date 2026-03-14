@@ -38,7 +38,8 @@ public class ShooterSubsystem extends SubsystemBase {
   private final TalonFX flywheelMotor = new TalonFX(kFlywheelMotorCanId);
   private final TalonFX flywheelFollowerMotor = new TalonFX(kFlywheelFollowerMotorCanId);
 
-  // Initialize feeder TalonFX. We will use open loop (DutyCycle) control for this.
+  // Initialize feeder TalonFX. We will use open loop (DutyCycle) control for
+  // this.
   private final TalonFX feederMotor = new TalonFX(kFeederMotorCanId);
 
   // Control requests - reuse these objects to avoid garbage collection
@@ -59,14 +60,15 @@ public class ShooterSubsystem extends SubsystemBase {
     flywheelConfig.Slot0.kD = 0.0;
     flywheelConfig.Slot0.kV = 0.12; // Feedforward: ~1/kMaxRPS
     flywheelConfig.MotionMagic.MotionMagicAcceleration = 400; // RPS/s
-    flywheelConfig.MotionMagic.MotionMagicJerk = 4000;        // RPS/s^2
+    flywheelConfig.MotionMagic.MotionMagicJerk = 4000; // RPS/s^2
     flywheelMotor.getConfigurator().apply(flywheelConfig);
 
-    // Configure follower - set to oppose leader direction if motors are mounted mirrored
+    // Configure follower - set to oppose leader direction if motors are mounted
+    // mirrored
     TalonFXConfiguration followerConfig = new TalonFXConfiguration();
     flywheelFollowerMotor.getConfigurator().apply(followerConfig);
 
-    // TODO: Use Aligned if the motors are mounted the same direction, 
+    // TODO: Use Aligned if the motors are mounted the same direction,
     // TODO: Opposed if they're mirrored facing each other
     flywheelFollowerMotor.setControl(new Follower(flywheelMotor.getDeviceID(), MotorAlignmentValue.Opposed));
 
@@ -169,26 +171,21 @@ public class ShooterSubsystem extends SubsystemBase {
   public void periodic() {
     // Limelight hello world!s
     Boolean found_target = LimelightHelpers.getTV("");
+
     SmartDashboard.putBoolean(("LL Has Target In Sights - Fire away"), found_target);
     // SmartDashboard.putBoolean("LL Has Target", LimelightHelpers.getTV(""));
     SmartDashboard.putNumber("LL TX", LimelightHelpers.getTX(""));
     SmartDashboard.putNumber("LL TY", LimelightHelpers.getTY(""));
 
     // Display subsystem values
-    SmartDashboard.putNumber("Shooter | Feeder | Applied Output",
-        feederMotor.getDutyCycle().getValueAsDouble());
-    SmartDashboard.putNumber("Shooter | Flywheel | Applied Output",
-        flywheelMotor.getDutyCycle().getValueAsDouble());
-    SmartDashboard.putNumber("Shooter | Flywheel | Current",
-        flywheelMotor.getStatorCurrent().getValueAsDouble());
-    SmartDashboard.putNumber("Shooter | Flywheel Follower | Applied Output",
-        flywheelFollowerMotor.getDutyCycle().getValueAsDouble());
-    SmartDashboard.putNumber("Shooter | Flywheel Follower | Current",
-        flywheelFollowerMotor.getStatorCurrent().getValueAsDouble());
+    SmartDashboard.putNumber("Shooter | Feeder | Applied Output", feederMotor.getDutyCycle().getValueAsDouble());
+    SmartDashboard.putNumber("Shooter | Flywheel | Applied Output", flywheelMotor.getDutyCycle().getValueAsDouble());
+    SmartDashboard.putNumber("Shooter | Flywheel | Current", flywheelMotor.getStatorCurrent().getValueAsDouble());
+    SmartDashboard.putNumber("Shooter | Flywheel Follower | Applied Output", flywheelFollowerMotor.getDutyCycle().getValueAsDouble());
+    SmartDashboard.putNumber("Shooter | Flywheel Follower | Current", flywheelFollowerMotor.getStatorCurrent().getValueAsDouble());
 
     SmartDashboard.putNumber("Shooter | Flywheel | Target Velocity", flywheelTargetVelocity);
-    SmartDashboard.putNumber("Shooter | Flywheel | Actual Velocity",
-        flywheelMotor.getVelocity().getValueAsDouble());
+    SmartDashboard.putNumber("Shooter | Flywheel | Actual Velocity", flywheelMotor.getVelocity().getValueAsDouble());
 
     SmartDashboard.putBoolean("Is Flywheel Spinning", isFlywheelSpinning.getAsBoolean());
     SmartDashboard.putBoolean("Is Flywheel Stopped", isFlywheelStopped.getAsBoolean());
@@ -197,13 +194,20 @@ public class ShooterSubsystem extends SubsystemBase {
   @Override
   public void simulationPeriodic() {
     // TODO Auto-generated method stub
-    // super.simulationPeriodic();
+    super.simulationPeriodic();
     // System.out.println("Running simulation periodic");
+    // System.out.println("Running sim periodic");
     Boolean found_target = LimelightHelpers.getTV("limelight");
+    if (found_target == true) {
+      System.out.println("Found = " + found_target);
+    }
     // System.out.println(found_target);
     SmartDashboard.putBoolean(("LL Has Target In Sights - Fire away"), found_target);
-    // SmartDashboard.putBoolean("LL Has Target", LimelightHelpers.getTV(""));
-    SmartDashboard.putNumber("LL TX", LimelightHelpers.getTX(""));
-    SmartDashboard.putNumber("LL TY", LimelightHelpers.getTY(""));
+    // SmartDashboard.putBoolean("LL Has Target",
+    // LimelightHelpers.getTV("limelight"));
+    SmartDashboard.putNumber("LL TX", LimelightHelpers.getTX("limelight"));
+    SmartDashboard.putNumber("LL TY", LimelightHelpers.getTY("limelight"));
+    SmartDashboard.putNumber("LL HB", LimelightHelpers.getHeartbeat("limelight"));
+
   }
 }
