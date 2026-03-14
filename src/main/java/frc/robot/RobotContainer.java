@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 
@@ -180,11 +181,24 @@ public class RobotContainer {
     public Command getAutonomousCommand() {
         try {
             PathPlannerPath path = PathPlannerPath.fromPathFile("ShootReload");
-            return AutoBuilder.pathfindThenFollowPath(path, DriveToPoseCommand.CONSTRAINTS)
+
+            // Step 1: Wait a moment for Limelight to get a confident pose fix
+            Command waitForPose = new WaitCommand(0.5);
+
+            // Step 2: Pathfind to the shoot position (AutonUtils already knows Blue vs Red!)
+            Command driveToShoot = new DriveToPoseCommand(AutonUtils.getShootPosition());
+
+            // Step 3: Shoot for a fixed time
+            Command shoot = m_shooter.runShooterCommand().withTimeout(3.0); // TODO calibrate for time to shoot 8 ammo
+
+            // Step 4: Then run the ShootReload loop
+            Command loop = AutoBuilder.pathfindThenFollowPath(path, DriveToPoseCommand.CONSTRAINTS)
                 .repeatedly();
+
+            return new SequentialCommandGroup(waitForPose, driveToShoot, shoot, loop);
+
         } catch (FileVersionException | IOException | ParseException e) {
             e.printStackTrace();
-            // Fall back to just driving forward if path fails to load
             return m_DriveForwardCommand;
         }
     }
