@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.913,
+        "x": 2.918483541966859,
         "y": 3.99
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.9429419015670037,
-        "y": 6.07685271073487
+        "x": 2.683238585194525,
+        "y": 6.363914861761527
       },
       "isLocked": false,
       "linkedName": null
@@ -80,12 +80,12 @@
     },
     {
       "anchor": {
-        "x": 1.913,
+        "x": 2.918483541966859,
         "y": 3.99
       },
       "prevControl": {
-        "x": 0.9364347792709136,
-        "y": 2.679932685064485
+        "x": 1.680486536383286,
+        "y": 2.272500675432277
       },
       "nextControl": null,
       "isLocked": false,
@@ -110,50 +110,26 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "StartShoot",
-      "waypointRelativePos": 0.0,
-      "endWaypointRelativePos": null,
-      "command": null
-    },
-    {
-      "name": "StopShoot",
-      "waypointRelativePos": 0.0,
-      "endWaypointRelativePos": null,
-      "command": null
-    },
-    {
-      "name": "SlapArmDown",
-      "waypointRelativePos": 0.09858044164037855,
-      "endWaypointRelativePos": null,
-      "command": null
-    },
-    {
-      "name": "StartShoot",
-      "waypointRelativePos": 0.25753524250788506,
-      "endWaypointRelativePos": null,
-      "command": null
-    },
-    {
-      "name": "SlapArmDown",
-      "waypointRelativePos": 0.5384648560725549,
-      "endWaypointRelativePos": null,
-      "command": null
-    },
-    {
       "name": "StartIntake",
-      "waypointRelativePos": 0.5840583103312303,
+      "waypointRelativePos": 0.600786179022082,
       "endWaypointRelativePos": null,
       "command": null
     },
     {
-      "name": "SlapArmUp",
-      "waypointRelativePos": 4.299493542981079,
+      "name": "SlapArmDown",
+      "waypointRelativePos": 0.6019260153785486,
       "endWaypointRelativePos": null,
       "command": null
     },
     {
       "name": "StopIntake",
-      "waypointRelativePos": 4.541693365536279,
+      "waypointRelativePos": 4.3304847693217665,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "SlapArmUp",
+      "waypointRelativePos": 4.333195731466879,
       "endWaypointRelativePos": null,
       "command": null
     }

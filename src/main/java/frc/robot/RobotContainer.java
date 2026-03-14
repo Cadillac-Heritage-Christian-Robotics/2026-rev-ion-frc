@@ -27,6 +27,8 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -36,6 +38,8 @@ import frc.robot.subsystems.ShooterSubsystem;
 public class RobotContainer {
 
     // The robot's subsystems and commands are defined here...
+    private final SendableChooser<String> m_autoChooser = new SendableChooser<>();
+
 
     // Subsystems
     // private final CoralSubsystem m_coralSubSystem = new CoralSubsystem();
@@ -104,7 +108,14 @@ public class RobotContainer {
         NamedCommands.registerCommand("StartShoot",   m_shooter.runShooterCommand());
         NamedCommands.registerCommand("StopShoot",    m_shooter.runOnce(() -> {}));
 
-        // NamedCommands.registerCommand("full_auton", AutonCommands.getAutonomousCommand());
+        // Register your path options
+        m_autoChooser.setDefaultOption("Reload North South A", "ReloadNorthSouthA");
+        m_autoChooser.addOption("Reload North South B", "ReloadNorthSouthB");
+        m_autoChooser.addOption("TODO Reload from cache", null);
+
+        // Push it to SmartDashboard so drive team can see it
+        SmartDashboard.putData("Auto Path", m_autoChooser);
+
 
         configureBindings();
     }
@@ -180,26 +191,34 @@ public class RobotContainer {
 
     public Command getAutonomousCommand() {
         try {
-            PathPlannerPath path = PathPlannerPath.fromPathFile("ReloadNorthSouthA");
+            String selectedPath = m_autoChooser.getSelected();
+            // Handle the drive forward fallback if null selected
+            if (selectedPath == null) return m_DriveForwardCommand; // TODO - better default!
 
-            // Step 1: Wait a moment for Limelight to get a confident pose fix
+            PathPlannerPath path = PathPlannerPath.fromPathFile(selectedPath);
+
+            // Step 1: Wait a moment for Limelight to get a confident pose fix (one time only)
             Command waitForPose = new WaitCommand(0.5);
 
-            // Step 2: Pathfind to the shoot position (AutonUtils already knows Blue vs Red!)
-            Command driveToShoot = new DriveToPoseCommand(AutonUtils.getShootPosition());
+            // Repeating loop: drive to shoot, shoot, reload
+            Command loop = new SequentialCommandGroup(
 
-            // Step 3: Shoot for a fixed time
-            Command shoot = m_shooter.runShooterCommand().withTimeout(3.0); // TODO calibrate for time to shoot 8 ammo
+                // Step 2: Pathfind to the shoot position (AutonUtils already knows Blue vs Red!)
+                new DriveToPoseCommand(AutonUtils.getShootPosition()),
 
-            // Step 4: Then run the ReloadNorthSouthA loop
-            // Drives to neutral zone north slightly off center favoring alliance side
-            // Drives to neutral zone south in a straight line
-            // Drives back to original shooting position
-            // Takes into account raising and lower of slap arm over Ramp and activating intake in neutral zone!
-            Command loop = AutoBuilder.pathfindThenFollowPath(path, DriveToPoseCommand.CONSTRAINTS)
-                .repeatedly();
+                // Step 3: Shoot for a fixed time
+                m_shooter.runShooterCommand().withTimeout(3.0), // TODO calibrate for time to shoot 8 ammo
 
-            return new SequentialCommandGroup(waitForPose, driveToShoot, shoot, loop);
+                // Step 4: Then run the ReloadNorthSouthA loop
+                // Drives to neutral zone north slightly off center favoring alliance side
+                // Drives to neutral zone south in a straight line
+                // Drives back to original shooting position
+                // Takes into account raising and lower of slap arm over Ramp and activating intake in neutral zone!
+                AutoBuilder.followPath(path)
+
+            ).repeatedly();
+
+            return new SequentialCommandGroup(waitForPose, loop);
 
         } catch (FileVersionException | IOException | ParseException e) {
             e.printStackTrace();
