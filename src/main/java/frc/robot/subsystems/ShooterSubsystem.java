@@ -195,18 +195,6 @@ public class ShooterSubsystem extends SubsystemBase {
   @Override
   public void simulationPeriodic() {
     // TODO Auto-generated method stub
-<<<<<<< Updated upstream
-    // super.simulationPeriodic();
-    // System.out.println("Running simulation periodic");
-    Boolean found_target = LimelightHelpers.getTV("limelight");
-    // System.out.println(found_target);
-    SmartDashboard.putBoolean(("LL Has Target In Sights - Fire away"), found_target);
-    // SmartDashboard.putBoolean("LL Has Target", LimelightHelpers.getTV(""));
-    SmartDashboard.putNumber("LL TX", LimelightHelpers.getTX(""));
-    SmartDashboard.putNumber("LL TY", LimelightHelpers.getTY(""));
-  }
-}
-=======
     super.simulationPeriodic();
     // System.out.println("Running simulation periodic");
     // System.out.println("Running sim periodic");
@@ -224,4 +212,3 @@ public class ShooterSubsystem extends SubsystemBase {
 
   }
 }
->>>>>>> Stashed changes
