@@ -180,7 +180,7 @@ public class RobotContainer {
 
     public Command getAutonomousCommand() {
         try {
-            PathPlannerPath path = PathPlannerPath.fromPathFile("ShootReload");
+            PathPlannerPath path = PathPlannerPath.fromPathFile("ReloadNorthSouthA");
 
             // Step 1: Wait a moment for Limelight to get a confident pose fix
             Command waitForPose = new WaitCommand(0.5);
@@ -191,7 +191,11 @@ public class RobotContainer {
             // Step 3: Shoot for a fixed time
             Command shoot = m_shooter.runShooterCommand().withTimeout(3.0); // TODO calibrate for time to shoot 8 ammo
 
-            // Step 4: Then run the ShootReload loop
+            // Step 4: Then run the ReloadNorthSouthA loop
+            // Drives to neutral zone north slightly off center favoring alliance side
+            // Drives to neutral zone south in a straight line
+            // Drives back to original shooting position
+            // Takes into account raising and lower of slap arm over Ramp and activating intake in neutral zone!
             Command loop = AutoBuilder.pathfindThenFollowPath(path, DriveToPoseCommand.CONSTRAINTS)
                 .repeatedly();
 
