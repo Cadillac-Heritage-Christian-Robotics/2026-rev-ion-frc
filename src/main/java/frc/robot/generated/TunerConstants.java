@@ -292,8 +292,8 @@ public static final RobotConfig PP_CONFIG;
     static {
         try {
             PP_CONFIG = new RobotConfig(
-                45.36,                             // robot mass in kg (100 lbs)
-                6.0,                               // moment of inertia (tune later)
+                45.36,                             // robot mass in kg (100 lbs) TODO tune this!
+                6.0,                               // moment of inertia (tune later) TODO tune this!
                 new ModuleConfig(
                     kWheelRadius.in(Meters),       // wheel radius in meters
                     kSpeedAt12Volts.in(MetersPerSecond), // max speed
@@ -303,7 +303,7 @@ public static final RobotConfig PP_CONFIG;
                     kSlipCurrent.in(Amps),         // 120A
                     1                              // 1 drive motor per module
                 ),
-                // Module positions FL, FR, BL, BR (all 15" from center)
+                // Module positions FL, FR, BL, BR (all 15" from center) TODO verify this!
                 new Translation2d(Inches.of(15).in(Meters), Inches.of(15).in(Meters)),
                 new Translation2d(Inches.of(15).in(Meters), Inches.of(-15).in(Meters)),
                 new Translation2d(Inches.of(-15).in(Meters), Inches.of(15).in(Meters)),

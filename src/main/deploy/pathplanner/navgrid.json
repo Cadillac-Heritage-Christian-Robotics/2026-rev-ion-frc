@@ -1,0 +1,19 @@
+{
+    "field_size": {
+        "x": 16.46,
+        "y": 8.23
+    },
+    "nodeSizeMeters": 0.2,
+    "obstacles": [
+        {
+            "x": 3.0,
+            "y": 4.1,
+            "radius": 0.8
+        },
+        {
+            "x": 13.5,
+            "y": 4.1,
+            "radius": 0.8
+        }
+    ]
+}
