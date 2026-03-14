@@ -102,9 +102,9 @@ public class RobotContainer {
         // m_algaeSubsystem.setDefaultCommand(m_algaeSubsystem.idleCommand());
         // Register named commands for PathPlanner
         NamedCommands.registerCommand("StartIntake",  m_intake.runIntakeCommand());
-        NamedCommands.registerCommand("StopIntake",   m_intake.runExtakeCommand());
-        NamedCommands.registerCommand("SlapUp",       m_intake.runSlapUpCommand().withTimeout(0.5)); // TODO add stop logic
-        NamedCommands.registerCommand("SlapDown",     m_intake.runSlapDownCommand().withTimeout(0.5)); // TODO add stop logic
+        NamedCommands.registerCommand("StopIntake",   m_intake.runOnce(() -> {});
+        NamedCommands.registerCommand("SlapArmUp",    m_intake.runSlapUpCommand().withTimeout(0.5)); // TODO add stop logic
+        NamedCommands.registerCommand("SlapArmDown",  m_intake.runSlapDownCommand().withTimeout(0.5)); // TODO add stop logic
         NamedCommands.registerCommand("StartShoot",   m_shooter.runShooterCommand());
         NamedCommands.registerCommand("StopShoot",    m_shooter.runOnce(() -> {}));
 
