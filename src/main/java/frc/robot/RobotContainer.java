@@ -8,14 +8,10 @@ import static edu.wpi.first.units.Units.*;
 
 import java.io.IOException;
 
-import org.json.simple.parser.ParseException;
-
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.config.PIDConstants;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.FileVersionException;
 
@@ -27,7 +23,6 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -46,7 +41,6 @@ public class RobotContainer {
     private final SendableChooser<String> m_autoColor = new SendableChooser<>();
     private final SendableChooser<String> m_autoStrategy = new SendableChooser<>();
     private final SendableChooser<Double> m_timeToShoot = new SendableChooser<>();
-
 
     // Subsystems
     private final IntakeSubsystem m_intake = new IntakeSubsystem();
@@ -81,28 +75,7 @@ public class RobotContainer {
     private final DriveForwardCommand m_DriveForwardCommand = new DriveForwardCommand(drivetrain);
 
     public RobotContainer() {
-        // Configure AutoBuilder for PathPlanner
-        AutoBuilder.configure(
-            () -> drivetrain.getState().Pose,           // how to get current pose
-            drivetrain::resetPose,                       // how to reset pose
-            () -> drivetrain.getState().Speeds,          // current chassis speeds
-            (speeds, feedforwards) -> drivetrain.setControl(  // how to drive
-                new SwerveRequest.ApplyRobotSpeeds()
-                    .withSpeeds(speeds)
-                    .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
-                    .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
-            ),
-            new PPHolonomicDriveController(
-                new PIDConstants(5.0, 0, 0),   // translation PID
-                new PIDConstants(5.0, 0, 0)    // rotation PID
-            ),
-            TunerConstants.PP_CONFIG,           // robot config
-            () -> DriverStation.getAlliance()
-                    .filter(a -> a == Alliance.Red)
-                    .isPresent(),               // flip paths for red alliance
-            drivetrain
-        );
-
+    //     configureBindings();
         // Register named commands for PathPlanner
         NamedCommands.registerCommand("StartIntake", m_intake.runIntakeCommand());
         NamedCommands.registerCommand("StopIntake",  m_intake.runOnce(() -> {}));
@@ -274,9 +247,14 @@ public class RobotContainer {
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Done!"))
             );
 
-        } catch (FileVersionException | IOException | ParseException e) {
+        } catch (FileVersionException | IOException e) {
             e.printStackTrace();
             return m_DriveForwardCommand;
-        }
+        } catch (org.json.simple.parser.ParseException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            return m_DriveForwardCommand;
     }
+
 } // end of RobotContainer
