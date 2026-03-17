@@ -25,6 +25,7 @@ import frc.robot.commands.DriveForwardCommand;
 import frc.robot.commands.DriveToPoseCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -38,12 +39,12 @@ import frc.robot.subsystems.ShooterSubsystem;
 public class RobotContainer {
 
     // The robot's subsystems and commands are defined here...
-    private final SendableChooser<String> m_autoChooser = new SendableChooser<>();
+    private final SendableChooser<String> m_autoLocation = new SendableChooser<>();
+    private final SendableChooser<String> m_autoColor = new SendableChooser<>();
+    private final SendableChooser<String> m_autoStrategy = new SendableChooser<>();
 
 
     // Subsystems
-    // private final CoralSubsystem m_coralSubSystem = new CoralSubsystem();
-    // private final AlgaeSubsystem m_algaeSubsystem = new AlgaeSubsystem();
     private final IntakeSubsystem m_intake = new IntakeSubsystem();
     private final ShooterSubsystem m_shooter = new ShooterSubsystem();
 
@@ -98,24 +99,36 @@ public class RobotContainer {
             drivetrain
         );
 
-        // Set the default commands for a algae
-        // m_algaeSubsystem.setDefaultCommand(m_algaeSubsystem.idleCommand());
         // Register named commands for PathPlanner
         NamedCommands.registerCommand("StartIntake",  m_intake.runIntakeCommand());
         NamedCommands.registerCommand("StopIntake",   m_intake.runOnce(() -> {}));
         NamedCommands.registerCommand("SlapArmUp",    m_intake.runSlapUpCommand().withTimeout(0.5)); // TODO add stop logic
         NamedCommands.registerCommand("SlapArmDown",  m_intake.runSlapDownCommand().withTimeout(0.5)); // TODO add stop logic
         NamedCommands.registerCommand("StartShoot",   m_shooter.runShooterCommand());
-        NamedCommands.registerCommand("StopShoot",    m_shooter.runOnce(() -> {}));
+        NamedCommands.registerCommand("StopShoot",    m_shooter.runOnce(() -> {}));        
 
         // Register your path options
-        m_autoChooser.setDefaultOption("Reload North South A", "ReloadNorthSouthA");
-        m_autoChooser.addOption("Reload North South B", "ReloadNorthSouthB");
-        m_autoChooser.addOption("TODO Reload from cache", null);
+        var alliance = DriverStation.getAlliance();
+        if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
+            System.out.println("Alliance detection worked - safe to remove m_autocolor SelectableChoose from RobotContainer.java!");
+            m_autoColor.setDefaultOption("Red", "Red");
+            m_autoColor.addOption("Blue", "Blue");
+        } else {
+            m_autoColor.setDefaultOption("Blue", "Blue");
+            m_autoColor.addOption("Red", "Red");
+        }
+        
+
+        m_autoLocation.setDefaultOption("North", "North");
+        m_autoLocation.addOption("South", "South");
+
+        m_autoStrategy.setDefaultOption("Alpha", "Alpha");
+        m_autoStrategy.addOption("Bravo", "Bravo");
 
         // Push it to SmartDashboard so drive team can see it
-        SmartDashboard.putData("Auto Path", m_autoChooser);
-
+        SmartDashboard.putData("Alliance Color", m_autoColor);
+        SmartDashboard.putData("Starting Location", m_autoLocation);
+        SmartDashboard.putData("Auton Strategy", m_autoStrategy);
 
         configureBindings();
     }
@@ -191,28 +204,37 @@ public class RobotContainer {
 
     public Command getAutonomousCommand() {
         try {
-            String selectedPath = m_autoChooser.getSelected();
-            // Handle the drive forward fallback if null selected
-            if (selectedPath == null) return m_DriveForwardCommand; // TODO - better default!
+            /** 
+             * All Auton Paths are structed in the format: $Color$Location$Strategy
+             * Color = "Red" or "Blue"
+             * Location = "North" or "South"
+             * Stratergy = "Alpha" or "Bravo"
+             * The default Strategy is "RedNorthAlpha"
+            **/
+            String selectedColor = m_autoColor.getSelected();
+            String selectedLocation = m_autoLocation.getSelected();
+            String selectedStrat = m_autoStrategy.getSelected();
+
+            String selectedPath = selectedColor + selectedLocation + selectedStrat;
+
+            // Manually curated list of starting positions based on with PathPlanner we are using.
+            Pose2d startingPosition = AutonUtils.getStartingPose(selectedPath);
 
             PathPlannerPath path = PathPlannerPath.fromPathFile(selectedPath);
 
             // Step 1: Wait a moment for Limelight to get a confident pose fix (one time only)
-            Command waitForPose = new WaitCommand(0.5);
+            Command waitForPose = new WaitCommand(0.25);
 
-            // Repeating loop: drive to shoot, shoot, reload
+            // Repeating loop: drive to start, shoot, reload
             Command loop = new SequentialCommandGroup(
 
                 // Step 2: Pathfind to the shoot position (AutonUtils already knows Blue vs Red!)
-                new DriveToPoseCommand(AutonUtils.getShootPosition()),
+                new DriveToPoseCommand(startingPosition),
 
                 // Step 3: Shoot for a fixed time
                 m_shooter.runShooterCommand().withTimeout(3.0), // TODO calibrate for time to shoot 8 ammo
 
-                // Step 4: Then run the ReloadNorthSouthA loop
-                // Drives to neutral zone north slightly off center favoring alliance side
-                // Drives to neutral zone south in a straight line
-                // Drives back to original shooting position
+                // Step 4: Then re-run the Path loop
                 // Takes into account raising and lower of slap arm over Ramp and activating intake in neutral zone!
                 AutoBuilder.followPath(path)
 

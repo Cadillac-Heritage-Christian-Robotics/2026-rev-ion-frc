@@ -1,0 +1,118 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 13.602,
+        "y": 4.808
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 13.205359599610434,
+        "y": 5.88696672399992
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 8.963,
+        "y": 6.947123480902778
+      },
+      "prevControl": {
+        "x": 8.95175904224537,
+        "y": 5.758588686342594
+      },
+      "nextControl": {
+        "x": 8.96536435127627,
+        "y": 7.197112300338853
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 8.862003833912038,
+        "y": 4.07548169849537
+      },
+      "prevControl": {
+        "x": 8.860468098612936,
+        "y": 3.810837631850583
+      },
+      "nextControl": {
+        "x": 8.87405461516204,
+        "y": 6.152120659722223
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 13.602,
+        "y": 4.808351345486111
+      },
+      "prevControl": {
+        "x": 14.543707971643519,
+        "y": 5.815669849537037
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1,
+      "rotationDegrees": -91.9414098637603
+    },
+    {
+      "waypointRelativePos": 2,
+      "rotationDegrees": -90.56012138024063
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "StartIntake",
+      "waypointRelativePos": 0.5449218749999998,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "SlapArmDown"
+        }
+      }
+    },
+    {
+      "name": "StopIntake",
+      "waypointRelativePos": 2.3677307533112586,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "SlapArmUp"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -143.9313731870883
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -143.15069744040738
+  },
+  "useDefaultConstraints": true
+}
