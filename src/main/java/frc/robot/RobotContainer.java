@@ -249,25 +249,28 @@ public class RobotContainer {
             PathPlannerPath path = PathPlannerPath.fromPathFile(selectedPath);
 
             return new SequentialCommandGroup(
-                // Step 1: Wait a moment for Limelight to get a confident pose fix (one time only)
+                // Step 1: Wait for Limelight to get a confident pose fix
                 new WaitCommand(0.25),
 
+                // Step 2: Drive to shoot position
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Driving to shoot position")),
                 new DriveToPoseCommand(startingPosition),
 
+                // Step 3: Shoot preloaded fuel
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Shooting")),
                 m_shooter.runShooterCommand().withTimeout(timeToShoot),
 
-                // Steps 3 & 4 only if NOT default strategy
-                Boolean.TRUE.equals(autoDefault)
-                    ? Commands.none()
-                    : new SequentialCommandGroup(
-                        drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Running reload path")),
-                        AutoBuilder.followPath(path),
+                // Step 4: Always run the selected path (intake via event markers)
+                drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Running path")),
+                AutoBuilder.followPath(path),
 
+                // Step 5: Shoot again only if Alpha/Bravo strategy (not default)
+                Boolean.FALSE.equals(autoDefault)
+                    ? new SequentialCommandGroup(
                         drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Shooting again")),
                         m_shooter.runShooterCommand().withTimeout(timeToShoot * 2)
-                    ),
+                    )
+                    : Commands.none(),
 
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Done!"))
             );
