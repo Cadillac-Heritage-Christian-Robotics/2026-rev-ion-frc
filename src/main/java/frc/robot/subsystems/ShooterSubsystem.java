@@ -30,7 +30,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
   // TODO: Phoenix6 velocity is in rotations per second - tune this value!
   // Original was 5000 RPM ≈ 83.3 RPS
-  private static final double kShootVelocityRPS = 83.3;
+  private static final double kShootVelocityRPS = 50;
   private static final double kVelocityTolerance = 2.0; // RPS
 
   // Initialize flywheel TalonFXs. We will use MotionMagic velocity control for
