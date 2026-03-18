@@ -39,6 +39,8 @@ import frc.robot.subsystems.ShooterSubsystem;
 public class RobotContainer {
 
     // The robot's subsystems and commands are defined here...
+    private final SendableChooser<Boolean> m_autoDefault = new SendableChooser<>();
+
     private final SendableChooser<String> m_autoLocation = new SendableChooser<>();
     private final SendableChooser<String> m_autoColor = new SendableChooser<>();
     private final SendableChooser<String> m_autoStrategy = new SendableChooser<>();
@@ -105,7 +107,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("SlapArmUp",    m_intake.runSlapUpCommand().withTimeout(0.5)); // TODO add stop logic
         NamedCommands.registerCommand("SlapArmDown",  m_intake.runSlapDownCommand().withTimeout(0.5)); // TODO add stop logic
         NamedCommands.registerCommand("StartShoot",   m_shooter.runShooterCommand());
-        NamedCommands.registerCommand("StopShoot",    m_shooter.runOnce(() -> {}));        
+        NamedCommands.registerCommand("StopShoot",    m_shooter.runOnce(() -> {}));
 
         // Register your path options
         var alliance = DriverStation.getAlliance();
@@ -129,6 +131,10 @@ public class RobotContainer {
         SmartDashboard.putData("Alliance Color", m_autoColor);
         SmartDashboard.putData("Starting Location", m_autoLocation);
         SmartDashboard.putData("Auton Strategy", m_autoStrategy);
+
+        m_autoDefault.setDefaultOption("True", true);
+        m_autoDefault.setDefaultOption("False", false);
+        SmartDashboard.putData("Override Auton Strategy", m_autoDefault);
 
         configureBindings();
     }
@@ -214,8 +220,16 @@ public class RobotContainer {
             String selectedColor = m_autoColor.getSelected();
             String selectedLocation = m_autoLocation.getSelected();
             String selectedStrat = m_autoStrategy.getSelected();
+            Boolean autoDefault = m_autoDefault.getSelected();
 
             String selectedPath = selectedColor + selectedLocation + selectedStrat;
+
+            if (autoDefault == true) {
+                System.out.println("Overriding path with default path");
+                selectedPath = selectedColor + selectedLocation + "Default";
+            }
+
+            System.out.println("Selected Path = " + selectedPath);
 
             // Manually curated list of starting positions based on with PathPlanner we are using.
             Pose2d startingPosition = AutonUtils.getStartingPose(selectedPath);
