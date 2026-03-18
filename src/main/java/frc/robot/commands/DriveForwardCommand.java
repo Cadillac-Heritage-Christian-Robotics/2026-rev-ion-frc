@@ -29,7 +29,7 @@ public class DriveForwardCommand extends SequentialCommandGroup {
         SwerveRequest.FieldCentricFacingAngle driveForwardRequest = new SwerveRequest.FieldCentricFacingAngle()
             // .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
             // .withDriveRequestType(SwerveRequest.DriveRequestType.OpenLoopVoltage)
-            .withVelocityX(2.0) // 2 meters per second in the X direction (forward)
+            .withVelocityX(0.0) // 2 meters per second in the X direction (forward)
             .withVelocityY(0.0) // No Y velocity
             .withTargetDirection(Rotation2d.fromDegrees(0.0)) // Keep facing forward
             .withDeadband(0.1) // Small deadband for stability
