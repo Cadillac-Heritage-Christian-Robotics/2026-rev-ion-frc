@@ -21,7 +21,6 @@ public class DriveToPoseCommand extends Command {
 
     public DriveToPoseCommand(Pose2d targetPose) {
         m_targetPose = targetPose;
-        // NOTE: no addRequirements here — PathPlanner handles that internally!
     }
 
     @Override

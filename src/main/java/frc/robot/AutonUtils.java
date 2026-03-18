@@ -1,30 +1,24 @@
 package frc.robot;
 
+import java.util.Map;
+
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.Constants.TargetPositions;
 
+
 public final class AutonUtils {
-
-    /**
-     * From your current position, calculate if you are closer to the "North" or "South" Poles to reload.
-     * @return 
-     */
-    public static Pose2d getClosestPole() {
-        Pose2d current = LimelightHelpers.getBotPose2d_wpiBlue("limelight");
-
-        double distNorth = current.getTranslation().getDistance(TargetPositions.NORTH_POLE.getTranslation());
-        double distSouth = current.getTranslation().getDistance(TargetPositions.SOUTH_POLE.getTranslation());
-
-        return distNorth < distSouth ? TargetPositions.NORTH_POLE : TargetPositions.SOUTH_POLE;
-    }
-
-  // TODO - we need better logic for this to see which 'half' of the space we are in, not the specific box
-  public static Pose2d getOppositePole(Pose2d currentTarget) {
-      return currentTarget.equals(TargetPositions.NORTH_POLE) 
-          ? TargetPositions.SOUTH_POLE 
-          : TargetPositions.NORTH_POLE;
-  }
+    public static final Map<String, Pose2d> AUTON_START_POSES = Map.of(
+        "BlueNorthAlpha", new Pose2d(2.938, 4.808, Rotation2d.fromDegrees(83.478)),
+        "BlueNorthBravo", new Pose2d(2.938, 4.808, Rotation2d.fromDegrees(119.775)),
+        "BlueSouthAlpha", new Pose2d(2.938, 3.348, Rotation2d.fromDegrees(-104.069)),
+        "BlueSouthBravo", new Pose2d(2.938, 3.348, Rotation2d.fromDegrees(119.177)),
+        "RedNorthAlpha", new Pose2d(13.602, 4.808, Rotation2d.fromDegrees(110.184)),
+        "RedNorthBravo", new Pose2d(13.602, 4.808, Rotation2d.fromDegrees(80.221)),
+        "RedSouthAlpha", new Pose2d(13.780, 3.250, Rotation2d.fromDegrees(-42.038)),
+        "RedSouthBravo", new Pose2d(13.780, 3.250, Rotation2d.fromDegrees(-37.443))
+    );
 
     public static Pose2d getShootPosition() {
         var alliance = DriverStation.getAlliance();
@@ -36,13 +30,7 @@ public final class AutonUtils {
         return TargetPositions.BLUE_SHOOT;
     }
 
-  // public Command getAutonomousCommand() {
-  //   return new SequentialCommandGroup(
-  //       new ShootCommand(drivetrain, m_shooter),     // shoot preloaded
-  //       new DriveToPoseCommand(drivetrain, AutonUtils.getClosestPole()),   // go to nearest pole
-  //       new DriveToPoseCommand(drivetrain, AutonUtils.getOppositePole()),  // plow through to other side
-  //       new DriveToPoseCommand(drivetrain, AutonUtils.getShootPosition()), // drive to shoot spot
-  //       new ShootCommand(drivetrain, m_shooter)      // shoot
-  //   ).repeatedly();
-  // }
+    public static Pose2d getStartingPose(String strategy) {
+       return AUTON_START_POSES.getOrDefault(strategy, new Pose2d(2.938, 3.348, Rotation2d.fromDegrees(29.866)));
+    }
 }
