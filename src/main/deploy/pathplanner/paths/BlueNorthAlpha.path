@@ -71,7 +71,7 @@
   "eventMarkers": [
     {
       "name": "StartIntake",
-      "waypointRelativePos": 0.6523893837616827,
+      "waypointRelativePos": 0.5775919509594882,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -79,6 +79,12 @@
           "name": "SlapArmDown"
         }
       }
+    },
+    {
+      "name": "SlapArmDown",
+      "waypointRelativePos": 0.5790411780383795,
+      "endWaypointRelativePos": null,
+      "command": null
     },
     {
       "name": "StopIntake",

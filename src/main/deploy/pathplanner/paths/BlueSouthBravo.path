@@ -74,8 +74,14 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
+      "name": "SlapArmDown",
+      "waypointRelativePos": 0.6209688166311302,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
       "name": "StartIntake",
-      "waypointRelativePos": 0.6523893837616827,
+      "waypointRelativePos": 0.6328374866737739,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",

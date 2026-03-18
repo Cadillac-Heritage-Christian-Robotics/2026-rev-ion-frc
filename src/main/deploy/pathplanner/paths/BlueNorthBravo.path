@@ -85,8 +85,14 @@
       }
     },
     {
+      "name": "SlapArmDown",
+      "waypointRelativePos": 0.6591984275053306,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
       "name": "StopIntake",
-      "waypointRelativePos": 2.347829658294394,
+      "waypointRelativePos": 2.42403218283582,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
