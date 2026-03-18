@@ -132,8 +132,8 @@ public class RobotContainer {
         SmartDashboard.putData("Starting Location", m_autoLocation);
         SmartDashboard.putData("Auton Strategy", m_autoStrategy);
 
-        m_autoDefault.setDefaultOption("True", true);
-        m_autoDefault.setDefaultOption("False", false);
+        m_autoDefault.setDefaultOption("Enable Default Strategy", true);
+        m_autoDefault.addOption("Use Alpha|Bravo Strategy", false);
         SmartDashboard.putData("Override Auton Strategy", m_autoDefault);
 
         configureBindings();
@@ -224,7 +224,7 @@ public class RobotContainer {
 
             String selectedPath = selectedColor + selectedLocation + selectedStrat;
 
-            if (autoDefault == true) {
+            if (Boolean.TRUE.equals(autoDefault) {
                 System.out.println("Overriding path with default path");
                 selectedPath = selectedColor + selectedLocation + "Default";
             }
