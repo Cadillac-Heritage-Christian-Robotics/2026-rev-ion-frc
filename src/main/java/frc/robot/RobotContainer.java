@@ -104,12 +104,11 @@ public class RobotContainer {
         );
 
         // Register named commands for PathPlanner
-        NamedCommands.registerCommand("StartIntake",  m_intake.runIntakeCommand());
-        NamedCommands.registerCommand("StopIntake",   m_intake.runOnce(() -> {}));
-        NamedCommands.registerCommand("SlapArmUp",    m_intake.runSlapUpCommand().withTimeout(0.5)); // TODO add stop logic
-        NamedCommands.registerCommand("SlapArmDown",  m_intake.runSlapDownCommand().withTimeout(0.5)); // TODO add stop logic
-        NamedCommands.registerCommand("StartShoot",   m_shooter.runShooterCommand());
-        NamedCommands.registerCommand("StopShoot",    m_shooter.runOnce(() -> {}));
+        NamedCommands.registerCommand("StartIntake", m_intake.runIntakeCommand());
+        NamedCommands.registerCommand("StopIntake",  m_intake.runOnce(() -> {}));
+
+        NamedCommands.registerCommand("SlapArmDown", m_intake.runSlapDownCommand().withTimeout(0.5));
+        NamedCommands.registerCommand("SlapArmUp",   m_intake.runSlapUpCommand().withTimeout(0.5));
 
         // Register your path options
         var alliance = DriverStation.getAlliance();
