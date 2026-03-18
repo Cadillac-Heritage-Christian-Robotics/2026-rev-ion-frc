@@ -31,6 +31,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.subsystems.IntakeSubsystem;
@@ -44,6 +45,7 @@ public class RobotContainer {
     private final SendableChooser<String> m_autoLocation = new SendableChooser<>();
     private final SendableChooser<String> m_autoColor = new SendableChooser<>();
     private final SendableChooser<String> m_autoStrategy = new SendableChooser<>();
+    private final SendableChooser<Double> m_timeToShoot = new SendableChooser<>();
 
 
     // Subsystems
@@ -132,9 +134,17 @@ public class RobotContainer {
         SmartDashboard.putData("Starting Location", m_autoLocation);
         SmartDashboard.putData("Auton Strategy", m_autoStrategy);
 
-        m_autoDefault.setDefaultOption("True", true);
-        m_autoDefault.setDefaultOption("False", false);
+        m_autoDefault.setDefaultOption("Use Default Strategy", true);
+        m_autoDefault.addOption("Use Alpha|Bravo Strategy", false);
         SmartDashboard.putData("Override Auton Strategy", m_autoDefault);
+
+        m_timeToShoot.setDefaultOption("3.0", 3.0);
+        m_timeToShoot.addOption("1.0", 1.0);
+        m_timeToShoot.addOption("2.0", 2.0);
+        m_timeToShoot.addOption("4.0", 4.0);
+        m_timeToShoot.addOption("5.0", 5.0);
+
+        SmartDashboard.putData("Auton Shoot Duration", m_timeToShoot);
 
         configureBindings();
     }
@@ -222,9 +232,11 @@ public class RobotContainer {
             String selectedStrat = m_autoStrategy.getSelected();
             Boolean autoDefault = m_autoDefault.getSelected();
 
+            Double timeToShoot = m_timeToShoot.getSelected();
+
             String selectedPath = selectedColor + selectedLocation + selectedStrat;
 
-            if (autoDefault == true) {
+            if (Boolean.TRUE.equals(autoDefault)) {
                 System.out.println("Overriding path with default path");
                 selectedPath = selectedColor + selectedLocation + "Default";
             }
@@ -236,25 +248,29 @@ public class RobotContainer {
 
             PathPlannerPath path = PathPlannerPath.fromPathFile(selectedPath);
 
-            // Step 1: Wait a moment for Limelight to get a confident pose fix (one time only)
-            Command waitForPose = new WaitCommand(0.25);
+            return new SequentialCommandGroup(
+                // Step 1: Wait a moment for Limelight to get a confident pose fix (one time only)
+                new WaitCommand(0.25),
 
-            // Repeating loop: drive to start, shoot, reload
-            Command loop = new SequentialCommandGroup(
-
-                // Step 2: Pathfind to the shoot position (AutonUtils already knows Blue vs Red!)
+                drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Driving to shoot position")),
                 new DriveToPoseCommand(startingPosition),
 
-                // Step 3: Shoot for a fixed time
-                m_shooter.runShooterCommand().withTimeout(3.0), // TODO calibrate for time to shoot 8 ammo
+                drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Shooting")),
+                m_shooter.runShooterCommand().withTimeout(timeToShoot),
 
-                // Step 4: Then re-run the Path loop
-                // Takes into account raising and lower of slap arm over Ramp and activating intake in neutral zone!
-                AutoBuilder.followPath(path)
+                // Steps 3 & 4 only if NOT default strategy
+                Boolean.TRUE.equals(autoDefault)
+                    ? Commands.none()
+                    : new SequentialCommandGroup(
+                        drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Running reload path")),
+                        AutoBuilder.followPath(path),
 
-            ).repeatedly();
+                        drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Shooting again")),
+                        m_shooter.runShooterCommand().withTimeout(timeToShoot * 2)
+                    ),
 
-            return new SequentialCommandGroup(waitForPose, loop);
+                drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Done!"))
+            );
 
         } catch (FileVersionException | IOException | ParseException e) {
             e.printStackTrace();
