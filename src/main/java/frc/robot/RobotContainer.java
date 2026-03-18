@@ -31,6 +31,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.subsystems.IntakeSubsystem;
@@ -44,6 +45,7 @@ public class RobotContainer {
     private final SendableChooser<String> m_autoLocation = new SendableChooser<>();
     private final SendableChooser<String> m_autoColor = new SendableChooser<>();
     private final SendableChooser<String> m_autoStrategy = new SendableChooser<>();
+    private final SendableChooser<Double> m_timeToShoot = new SendableChooser<>();
 
 
     // Subsystems
@@ -102,12 +104,11 @@ public class RobotContainer {
         );
 
         // Register named commands for PathPlanner
-        NamedCommands.registerCommand("StartIntake",  m_intake.runIntakeCommand());
-        NamedCommands.registerCommand("StopIntake",   m_intake.runOnce(() -> {}));
-        NamedCommands.registerCommand("SlapArmUp",    m_intake.runSlapUpCommand().withTimeout(0.5)); // TODO add stop logic
-        NamedCommands.registerCommand("SlapArmDown",  m_intake.runSlapDownCommand().withTimeout(0.5)); // TODO add stop logic
-        NamedCommands.registerCommand("StartShoot",   m_shooter.runShooterCommand());
-        NamedCommands.registerCommand("StopShoot",    m_shooter.runOnce(() -> {}));
+        NamedCommands.registerCommand("StartIntake", m_intake.runIntakeCommand());
+        NamedCommands.registerCommand("StopIntake",  m_intake.runOnce(() -> {}));
+
+        NamedCommands.registerCommand("SlapArmDown", m_intake.runSlapDownCommand().withTimeout(0.5));
+        NamedCommands.registerCommand("SlapArmUp",   m_intake.runSlapUpCommand().withTimeout(0.5));
 
         // Register your path options
         var alliance = DriverStation.getAlliance();
@@ -132,9 +133,17 @@ public class RobotContainer {
         SmartDashboard.putData("Starting Location", m_autoLocation);
         SmartDashboard.putData("Auton Strategy", m_autoStrategy);
 
-        m_autoDefault.setDefaultOption("True", true);
-        m_autoDefault.setDefaultOption("False", false);
+        m_autoDefault.setDefaultOption("Use Default Strategy", true);
+        m_autoDefault.addOption("Use Alpha|Bravo Strategy", false);
         SmartDashboard.putData("Override Auton Strategy", m_autoDefault);
+
+        m_timeToShoot.setDefaultOption("3.0", 3.0);
+        m_timeToShoot.addOption("1.0", 1.0);
+        m_timeToShoot.addOption("2.0", 2.0);
+        m_timeToShoot.addOption("4.0", 4.0);
+        m_timeToShoot.addOption("5.0", 5.0);
+
+        SmartDashboard.putData("Auton Shoot Duration", m_timeToShoot);
 
         configureBindings();
     }
@@ -222,9 +231,11 @@ public class RobotContainer {
             String selectedStrat = m_autoStrategy.getSelected();
             Boolean autoDefault = m_autoDefault.getSelected();
 
+            Double timeToShoot = m_timeToShoot.getSelected();
+
             String selectedPath = selectedColor + selectedLocation + selectedStrat;
 
-            if (autoDefault == true) {
+            if (Boolean.TRUE.equals(autoDefault)) {
                 System.out.println("Overriding path with default path");
                 selectedPath = selectedColor + selectedLocation + "Default";
             }
@@ -236,25 +247,32 @@ public class RobotContainer {
 
             PathPlannerPath path = PathPlannerPath.fromPathFile(selectedPath);
 
-            // Step 1: Wait a moment for Limelight to get a confident pose fix (one time only)
-            Command waitForPose = new WaitCommand(0.25);
+            return new SequentialCommandGroup(
+                // Step 1: Wait for Limelight to get a confident pose fix
+                new WaitCommand(0.25),
 
-            // Repeating loop: drive to start, shoot, reload
-            Command loop = new SequentialCommandGroup(
-
-                // Step 2: Pathfind to the shoot position (AutonUtils already knows Blue vs Red!)
+                // Step 2: Drive to shoot position
+                drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Driving to shoot position")),
                 new DriveToPoseCommand(startingPosition),
 
-                // Step 3: Shoot for a fixed time
-                m_shooter.runShooterCommand().withTimeout(3.0), // TODO calibrate for time to shoot 8 ammo
+                // Step 3: Shoot preloaded fuel
+                drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Shooting")),
+                m_shooter.runShooterCommand().withTimeout(timeToShoot),
 
-                // Step 4: Then re-run the Path loop
-                // Takes into account raising and lower of slap arm over Ramp and activating intake in neutral zone!
-                AutoBuilder.followPath(path)
+                // Step 4: Always run the selected path (intake via event markers)
+                drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Running path")),
+                AutoBuilder.followPath(path),
 
-            ).repeatedly();
+                // Step 5: Shoot again only if Alpha/Bravo strategy (not default)
+                Boolean.FALSE.equals(autoDefault)
+                    ? new SequentialCommandGroup(
+                        drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Shooting again")),
+                        m_shooter.runShooterCommand().withTimeout(timeToShoot * 2)
+                    )
+                    : Commands.none(),
 
-            return new SequentialCommandGroup(waitForPose, loop);
+                drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Done!"))
+            );
 
         } catch (FileVersionException | IOException | ParseException e) {
             e.printStackTrace();
