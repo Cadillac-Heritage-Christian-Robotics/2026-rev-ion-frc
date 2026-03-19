@@ -274,7 +274,7 @@ public class RobotContainer {
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Done!"))
             );
 
-        } catch (FileVersionException | IOException | ParseException e) {
+        } catch (FileVersionException | IOException | IllegalArgumentException | ParseException e) {
             e.printStackTrace();
             return m_DriveForwardCommand;
         }
