@@ -38,9 +38,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
 
-    private boolean m_visionEnabled = true;
-
-
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
     private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
     /* Red alliance sees forward as 180 degrees (toward blue alliance wall) */
@@ -243,7 +240,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
 
         // Feed Limelight into odometry
-        if (m_visionEnabled) {
+        if (DriverStation.isAutonomous()) {
             LimelightHelpers.SetRobotOrientation(
                 "limelight",
                 getState().Pose.getRotation().getDegrees(),
@@ -260,16 +257,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 );
             }
         }
-
-        SmartDashboard.putBoolean("Vision Enabled", m_visionEnabled);        
-    }
-
-    public void setVisionEnabled(boolean enabled) {
-        m_visionEnabled = enabled;
-    }
-
-    public boolean isVisionEnabled() {
-        return m_visionEnabled;
     }
 
     private void startSimThread() {
