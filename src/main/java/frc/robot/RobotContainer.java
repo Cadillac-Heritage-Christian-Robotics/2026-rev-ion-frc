@@ -145,6 +145,11 @@ public class RobotContainer {
 
         SmartDashboard.putData("Auton Shoot Duration", m_timeToShoot);
 
+        SmartDashboard.putData("Toggle Vision", drivetrain.runOnce(() ->
+            drivetrain.setVisionEnabled(!drivetrain.isVisionEnabled())
+        ));
+
+
         configureBindings();
     }
 
