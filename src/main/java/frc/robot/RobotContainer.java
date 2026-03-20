@@ -108,8 +108,8 @@ public class RobotContainer {
         NamedCommands.registerCommand("StartIntake", m_intake.runIntakeCommand());
         NamedCommands.registerCommand("StopIntake",  m_intake.runOnce(() -> {}));
 
-        NamedCommands.registerCommand("SlapArmDown", m_intake.runSlapDownCommand().withTimeout(0.5));
-        NamedCommands.registerCommand("SlapArmUp",   m_intake.runSlapUpCommand().withTimeout(0.5));
+        NamedCommands.registerCommand("SlapArmDown", m_intake.runSlapDownCommand());
+        NamedCommands.registerCommand("SlapArmUp",   m_intake.runSlapUpCommand());
 
         // Register your path options
         var alliance = DriverStation.getAlliance();
@@ -188,8 +188,8 @@ public class RobotContainer {
     // Y Button -> Run intake and run the shooter flywheel and feeder
     m_operatorController.y().toggleOnTrue(m_shooter.runShooterCommand().alongWith(m_intake.runIntakeCommand()));
     m_operatorController.x().toggleOnTrue(m_shooter.runShooterCommand());
-    m_operatorController.a().toggleOnTrue(m_intake.runSlapUpCommand().withTimeout(0.3));
-    m_operatorController.b().toggleOnTrue(m_intake.runSlapDownCommand().withTimeout(0.25));
+    m_operatorController.a().toggleOnTrue(m_intake.runSlapUpCommand());
+    m_operatorController.b().toggleOnTrue(m_intake.runSlapDownCommand());
 
         // B Button -> Elevator/Arm to human player position, set ball intake to stow when idle
         

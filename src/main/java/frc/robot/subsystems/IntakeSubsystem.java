@@ -10,8 +10,11 @@ import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Configs;
 import frc.robot.Constants.IntakeSubsystemConstants;
@@ -27,6 +30,7 @@ public class IntakeSubsystem extends SubsystemBase {
   private SparkFlex slapMotor =
    new SparkFlex(IntakeSubsystemConstants.kSlapMotorCanId, MotorType.kBrushless);
 
+  private PIDController slapMotorPID = new PIDController(10, 0, 0);
   // Initialize conveyor SPARK. We will use open loop control for this.
   //  private TalonFX conveyorMotor =
   //     new TalonFX(20); 
@@ -51,9 +55,11 @@ public class IntakeSubsystem extends SubsystemBase {
         PersistMode.kPersistParameters);
     
     slapMotor.configure(
-      Configs.IntakeSubsystem.intakeConfig,
+      Configs.IntakeSubsystem.slapConfig.apply(Configs.IntakeSubsystem.slapEncoderConfig),
       ResetMode.kResetSafeParameters,
       PersistMode.kPersistParameters);
+
+    slapMotor.getEncoder().setPosition(0.33);
 
     conveyorMotor.getConfigurator().apply(Configs.IntakeSubsystem.conveyorConfig);
 
@@ -74,6 +80,10 @@ public class IntakeSubsystem extends SubsystemBase {
      conveyorMotor.set(power);
    }
 
+  private void setSlapPosition(double position) {
+    slapMotorPID.setSetpoint(position);
+  }
+
   /**
    * Command to run the intake and conveyor motors. When the command is interrupted, e.g. the button is released,
    * the motors will stop.
@@ -90,21 +100,11 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public Command runSlapUpCommand() {
-    return this.startEnd(
-      () -> {
-        this.setSlapPower(ArmSetpoints.kLevel2);
-      }, () -> {
-        this.setSlapPower(0.0);
-      }).withName("Upward");
+    return new InstantCommand(() -> {this.setSlapPosition(0.3);});
     }
 
    public Command runSlapDownCommand() {
-    return this.startEnd(
-      () -> {
-        this.setSlapPower(ArmSetpoints.kLevel1);
-      }, () -> {
-        this.setSlapPower(0.0);
-      }).withName("Downward");
+    return new InstantCommand(() -> {this.setSlapPosition(0.005);});
     }
 
   /**
@@ -127,5 +127,7 @@ public class IntakeSubsystem extends SubsystemBase {
     // Display subsystem values
     SmartDashboard.putNumber("Intake | Intake | Applied Output", intakeMotor.getAppliedOutput());
     SmartDashboard.putNumber("Intake | Conveyor | Applied Output", conveyorMotor.get());
+
+    slapMotor.setVoltage(MathUtil.clamp(slapMotorPID.calculate(slapMotor.getEncoder().getPosition()), -12, 12));
   }
 }
