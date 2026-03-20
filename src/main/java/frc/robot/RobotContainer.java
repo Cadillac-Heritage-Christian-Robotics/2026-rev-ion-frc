@@ -21,20 +21,17 @@ import com.pathplanner.lib.util.FileVersionException;
 
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.OIConstants;
-import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.commands.DriveForwardCommand;
 import frc.robot.commands.DriveToPoseCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 
@@ -82,6 +79,8 @@ public class RobotContainer {
     private final DriveForwardCommand m_DriveForwardCommand = new DriveForwardCommand(drivetrain);
 
     public RobotContainer() {
+        System.out.println("Alliance at configure time: " + DriverStation.getAlliance());
+
         // Configure AutoBuilder for PathPlanner
         AutoBuilder.configure(
             () -> drivetrain.getState().Pose,           // how to get current pose
@@ -98,9 +97,7 @@ public class RobotContainer {
                 new PIDConstants(5.0, 0, 0)    // rotation PID
             ),
             TunerConstants.PP_CONFIG,           // robot config
-            () -> DriverStation.getAlliance()
-                    .filter(a -> a == Alliance.Red)
-                    .isPresent(),               // flip paths for red alliance
+            () -> false,
             drivetrain
         );
 
@@ -244,26 +241,21 @@ public class RobotContainer {
             System.out.println("Selected Path = " + selectedPath);
 
             // Manually curated list of starting positions based on with PathPlanner we are using.
-            Pose2d startingPosition = AutonUtils.getStartingPose(selectedPath);
+            Pose2d targetPosition = AutonUtils.getDesiredPose(selectedPath);
+            Pose2d startingPosition = AutonUtils.getActualStartingPos(selectedPath);
 
             PathPlannerPath path = PathPlannerPath.fromPathFile(selectedPath);
 
             return new SequentialCommandGroup(
-                // Step 0: Bootstrap pose from MegaTag1 so gyro is correct before pathfinding
+                // Step 1: Bootstrap pose from Strategy - ONLY trenches allowed!!!
                 drivetrain.runOnce(() -> {
-                    PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
-                    if (LimelightHelpers.validPoseEstimate(mt1)) {
-                        drivetrain.resetPose(mt1.pose);
-                    }
+                    SmartDashboard.putString("Starting Position", startingPosition.toString());
+                    drivetrain.resetPose(startingPosition);
                 }),
-
-                // Step 1: Wait for Limelight to get a confident pose fix
-                drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Waiting to orient")),
-                new WaitCommand(0.25),
 
                 // Step 2: Drive to shoot position
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Driving to shoot position")),
-                AutoBuilder.pathfindToPose(startingPosition, DriveToPoseCommand.CONSTRAINTS),
+                AutoBuilder.pathfindToPose(targetPosition, DriveToPoseCommand.CONSTRAINTS),
 
                 // Step 3: Shoot preloaded fuel
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Shooting")),
@@ -271,7 +263,7 @@ public class RobotContainer {
 
                 // Step 4: Always run the selected path (intake via event markers)
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Running path")),
-                AutoBuilder.followPath(path),
+                AutoBuilder.pathfindThenFollowPath(path, DriveToPoseCommand.CONSTRAINTS),
 
                 // Step 5: Shoot again only if Alpha/Bravo strategy (not default)
                 Boolean.FALSE.equals(autoDefault)
