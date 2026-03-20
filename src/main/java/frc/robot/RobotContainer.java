@@ -21,6 +21,7 @@ import com.pathplanner.lib.util.FileVersionException;
 
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.OIConstants;
+import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.commands.DriveForwardCommand;
 import frc.robot.commands.DriveToPoseCommand;
 import frc.robot.generated.TunerConstants;
@@ -145,11 +146,6 @@ public class RobotContainer {
 
         SmartDashboard.putData("Auton Shoot Duration", m_timeToShoot);
 
-        SmartDashboard.putData("Toggle Vision", drivetrain.runOnce(() ->
-            drivetrain.setVisionEnabled(!drivetrain.isVisionEnabled())
-        ));
-
-
         configureBindings();
     }
 
@@ -253,12 +249,21 @@ public class RobotContainer {
             PathPlannerPath path = PathPlannerPath.fromPathFile(selectedPath);
 
             return new SequentialCommandGroup(
+                // Step 0: Bootstrap pose from MegaTag1 so gyro is correct before pathfinding
+                drivetrain.runOnce(() -> {
+                    PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
+                    if (LimelightHelpers.validPoseEstimate(mt1)) {
+                        drivetrain.resetPose(mt1.pose);
+                    }
+                }),
+
                 // Step 1: Wait for Limelight to get a confident pose fix
+                drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Waiting to orient")),
                 new WaitCommand(0.25),
 
                 // Step 2: Drive to shoot position
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Driving to shoot position")),
-                new DriveToPoseCommand(startingPosition),
+                AutoBuilder.pathfindToPose(startingPosition, DriveToPoseCommand.CONSTRAINTS),
 
                 // Step 3: Shoot preloaded fuel
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Shooting")),
