@@ -110,6 +110,10 @@ public class RobotContainer {
         NamedCommands.registerCommand("SlapArmDown", m_intake.runSlapDownCommand().withTimeout(0.5));
         NamedCommands.registerCommand("SlapArmUp",   m_intake.runSlapUpCommand().withTimeout(0.5));
 
+        SmartDashboard.putData("Toggle Vision", drivetrain.runOnce(() ->
+            drivetrain.setVisionEnabled(!drivetrain.isVisionEnabled())
+        ));
+
         // Register your path options
         var alliance = DriverStation.getAlliance();
         if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
