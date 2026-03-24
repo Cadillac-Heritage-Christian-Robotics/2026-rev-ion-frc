@@ -30,7 +30,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
   // TODO: Phoenix6 velocity is in rotations per second - tune this value!
   // Original was 5000 RPM ≈ 83.3 RPS
-  private static final double kShootVelocityRPS = 95;
+  private static final double kShootVelocityRPS = 85;
   private static final double kVelocityTolerance = 2.0; // RPS
 
   // Initialize flywheel TalonFXs. We will use MotionMagic velocity control for
@@ -137,7 +137,7 @@ public class ShooterSubsystem extends SubsystemBase {
     return this.startEnd(
         () -> {
           this.setFlywheelVelocity(kShootVelocityRPS);
-          this.setFeederPower(0.8); // TODO: Move to constants
+          this.setFeederPower(1.0); // TODO: Move to constants
         },
         () -> {
           this.setFlywheelVelocity(0.0);

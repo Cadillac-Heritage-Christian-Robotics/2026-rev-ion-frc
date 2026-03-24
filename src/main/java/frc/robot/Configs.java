@@ -91,7 +91,7 @@ public final class Configs {
         .inverted(true)
         .idleMode(IdleMode.kCoast)
         .openLoopRampRate(1.0)
-        .smartCurrentLimit(60);
+        .smartCurrentLimit(75);
     }
   }
 }

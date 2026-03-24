@@ -26,6 +26,10 @@ public class IntakeSubsystem extends SubsystemBase {
   // Initialize intake SPARK. We will use open loop control for this. 
   private SparkFlex intakeMotor =
      new SparkFlex(IntakeSubsystemConstants.kIntakeMotorCanId, MotorType.kBrushless);
+  
+// Uncomment and comment/delete later the SparkFlex command then deploy the  
+// private TalonFX intakeMotor =
+  //    new TalonFX(IntakeSubsytemConstants.kIntakeMotorCanId);
 
   private SparkFlex slapMotor =
    new SparkFlex(IntakeSubsystemConstants.kSlapMotorCanId, MotorType.kBrushless);

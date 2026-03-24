@@ -11,9 +11,9 @@ import frc.robot.Constants.TargetPositions;
 public final class AutonUtils {
     public static final Map<String, Pose2d> AUTON_START_POSES = Map.ofEntries(
         // Blue North
-        Map.entry("BlueNorth",   new Pose2d(3.454, 7.622, Rotation2d.fromDegrees(0))),
-        Map.entry("BlueCenter",  new Pose2d(3.454, 4.041, Rotation2d.fromDegrees(0))),
-        Map.entry("BlueSouth",   new Pose2d(3.454, 0.460, Rotation2d.fromDegrees(0))),
+        Map.entry("BlueNorth",   new Pose2d(3.454, 7.622, Rotation2d.fromDegrees(0.0))),
+        Map.entry("BlueCenter",  new Pose2d(3.454, 4.041, Rotation2d.fromDegrees(0.0))),
+        Map.entry("BlueSouth",   new Pose2d(3.454, 0.460, Rotation2d.fromDegrees(0.0))),
 
         // Red North
         Map.entry("RedNorth",    new Pose2d(13.080, 7.622, Rotation2d.fromDegrees(180.0))),
