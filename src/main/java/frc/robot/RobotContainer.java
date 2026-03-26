@@ -109,8 +109,8 @@ public class RobotContainer {
         NamedCommands.registerCommand("StartIntake", m_intake.runIntakeCommand());
         NamedCommands.registerCommand("StopIntake",  m_intake.runOnce(() -> {}));
 
-        // NamedCommands.registerCommand("SlapArmDown", m_intake.runSlapDownCommand());
-        // NamedCommands.registerCommand("SlapArmUp",   m_intake.runSlapUpCommand());
+        NamedCommands.registerCommand("SlapArmDown", m_intake.runSlapDownCommand());
+        NamedCommands.registerCommand("SlapArmUp",   m_intake.runSlapUpCommand());
 
         // Register your path options
         var alliance = DriverStation.getAlliance();
