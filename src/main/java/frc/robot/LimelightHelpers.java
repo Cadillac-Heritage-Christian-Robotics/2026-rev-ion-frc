@@ -818,7 +818,7 @@ public class LimelightHelpers {
 
     static final String sanitizeName(String name) {
         if ("".equals(name) || name == null) {
-            return "limelight";
+            return "limelight-robot";
         }
         return name;
     }

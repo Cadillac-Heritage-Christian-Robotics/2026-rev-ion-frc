@@ -242,13 +242,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         // Feed Limelight into odometry
         if (DriverStation.isAutonomous()) {
             LimelightHelpers.SetRobotOrientation(
-                "limelight",
+                "limelight-robot",
                 getState().Pose.getRotation().getDegrees(),
                 0, 0, 0, 0, 0
             );
         
             PoseEstimate estimate = LimelightHelpers
-                .getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
+                .getBotPoseEstimate_wpiBlue_MegaTag2("limelight-robot");
 
             if (LimelightHelpers.validPoseEstimate(estimate)) {
                 addVisionMeasurement(

@@ -171,12 +171,12 @@ public class ShooterSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // Limelight hello world!s
-    Boolean found_target = LimelightHelpers.getTV("limelight");
+    Boolean found_target = LimelightHelpers.getTV("limelight-robot");
 
     SmartDashboard.putBoolean(("LL Has Target In Sights - Fire away"), found_target);
     // SmartDashboard.putBoolean("LL Has Target", LimelightHelpers.getTV(""));
-    SmartDashboard.putNumber("LL TX", LimelightHelpers.getTX("limelight"));
-    SmartDashboard.putNumber("LL TY", LimelightHelpers.getTY("limelight"));
+    SmartDashboard.putNumber("LL TX", LimelightHelpers.getTX("limelight-robot"));
+    SmartDashboard.putNumber("LL TY", LimelightHelpers.getTY("limelight-robot"));
 
     // Display subsystem values
     SmartDashboard.putNumber("Shooter | Feeder | Applied Output", feederMotor.getDutyCycle().getValueAsDouble());
@@ -198,17 +198,17 @@ public class ShooterSubsystem extends SubsystemBase {
     super.simulationPeriodic();
     // System.out.println("Running simulation periodic");
     // System.out.println("Running sim periodic");
-    Boolean found_target = LimelightHelpers.getTV("limelight");
+    Boolean found_target = LimelightHelpers.getTV("limelight-robot");
     if (found_target == true) {
       System.out.println("Found = " + found_target);
     }
     // System.out.println(found_target);
     SmartDashboard.putBoolean(("LL Has Target In Sights - Fire away"), found_target);
     // SmartDashboard.putBoolean("LL Has Target",
-    // LimelightHelpers.getTV("limelight"));
-    SmartDashboard.putNumber("LL TX", LimelightHelpers.getTX("limelight"));
-    SmartDashboard.putNumber("LL TY", LimelightHelpers.getTY("limelight"));
-    SmartDashboard.putNumber("LL HB", LimelightHelpers.getHeartbeat("limelight"));
+    // LimelightHelpers.getTV("limelight-robot"));
+    SmartDashboard.putNumber("LL TX", LimelightHelpers.getTX("limelight-robot"));
+    SmartDashboard.putNumber("LL TY", LimelightHelpers.getTY("limelight-robot"));
+    SmartDashboard.putNumber("LL HB", LimelightHelpers.getHeartbeat("limelight-robot"));
 
   }
 }
