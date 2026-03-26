@@ -247,7 +247,7 @@ public class RobotContainer {
             // Manually curated list of starting positions based on with PathPlanner we are using.
             Pose2d targetPosition = AutonUtils.getDesiredPose(selectedPath);
             Pose2d startingPosition = AutonUtils.getActualStartingPos(selectedPath);
-
+            System.out.println(targetPosition.toString());
             PathPlannerPath path = PathPlannerPath.fromPathFile(selectedPath);
 
             return new SequentialCommandGroup(
@@ -269,18 +269,17 @@ public class RobotContainer {
                 //     SmartDashboard.putString("Starting Position", startingPosition.toString());
                 //     drivetrain.resetPose(startingPosition);
                 // }),
-
                 // Step 2: Drive to shoot position
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Driving to shoot position")),
-                AutoBuilder.pathfindToPose(startingPosition, DriveToPoseCommand.CONSTRAINTS),
+                AutoBuilder.pathfindToPose(targetPosition, DriveToPoseCommand.CONSTRAINTS),
 
                 // Step 3: Shoot preloaded fuel
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Shooting")),
-                m_shooter.runShooterCommand().withTimeout(timeToShoot),
+                m_shooter.runShooterCommand().withTimeout(timeToShoot).deadlineWith(m_intake.runIntakeCommand()),
 
                 // Step 4: Always run the selected path (intake via event markers)
-                drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Running path")),
-                AutoBuilder.pathfindThenFollowPath(path, DriveToPoseCommand.CONSTRAINTS),
+                drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Running path2")),
+                AutoBuilder.followPath(path),
 
                 // Step 5: Shoot again only if Alpha/Bravo strategy (not default)
                 Boolean.FALSE.equals(autoDefault)

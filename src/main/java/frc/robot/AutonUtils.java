@@ -25,9 +25,9 @@ public final class AutonUtils {
 
     public static final Map<String, Pose2d> AUTON_TARGET_POSES = Map.ofEntries(
         // Blue North
-        Map.entry("BlueNorthAlpha",   new Pose2d(2.938, 4.808, Rotation2d.fromDegrees(83.478))),
-        Map.entry("BlueNorthBravo",   new Pose2d(2.938, 4.808, Rotation2d.fromDegrees(119.775))),
-        Map.entry("BlueNorthDefault", new Pose2d(2.938, 4.808, Rotation2d.fromDegrees(83.478))),
+        Map.entry("BlueNorthAlpha",   new Pose2d(2.938, 4.808, Rotation2d.fromDegrees(-45))),
+        Map.entry("BlueNorthBravo",   new Pose2d(2.938, 4.808, Rotation2d.fromDegrees(-119.775))),
+        Map.entry("BlueNorthDefault", new Pose2d(2.525, 4.456, Rotation2d.fromDegrees(-18.759))),
         // Blue South
         Map.entry("BlueSouthAlpha",   new Pose2d(2.938, 3.348, Rotation2d.fromDegrees(-104.069))),
         Map.entry("BlueSouthBravo",   new Pose2d(2.938, 3.348, Rotation2d.fromDegrees(119.177))),
