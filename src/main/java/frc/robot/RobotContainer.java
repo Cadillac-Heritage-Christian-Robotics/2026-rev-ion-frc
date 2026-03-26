@@ -21,6 +21,7 @@ import com.pathplanner.lib.util.FileVersionException;
 
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.OIConstants;
+import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.commands.DriveForwardCommand;
 import frc.robot.commands.DriveToPoseCommand;
 import frc.robot.generated.TunerConstants;
@@ -32,8 +33,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
+import edu.wpi.first.cameraserver.CameraServer;
+
 
 public class RobotContainer {
 
@@ -105,8 +109,8 @@ public class RobotContainer {
         NamedCommands.registerCommand("StartIntake", m_intake.runIntakeCommand());
         NamedCommands.registerCommand("StopIntake",  m_intake.runOnce(() -> {}));
 
-        NamedCommands.registerCommand("SlapArmDown", m_intake.runSlapDownCommand().withTimeout(0.5));
-        NamedCommands.registerCommand("SlapArmUp",   m_intake.runSlapUpCommand().withTimeout(0.5));
+        NamedCommands.registerCommand("SlapArmDown", m_intake.runSlapDownCommand());
+        NamedCommands.registerCommand("SlapArmUp",   m_intake.runSlapUpCommand());
 
         // Register your path options
         var alliance = DriverStation.getAlliance();
@@ -118,7 +122,7 @@ public class RobotContainer {
             m_autoColor.setDefaultOption("Blue", "Blue");
             m_autoColor.addOption("Red", "Red");
         }
-        
+
 
         m_autoLocation.setDefaultOption("North", "North");
         m_autoLocation.addOption("South", "South");
@@ -141,7 +145,7 @@ public class RobotContainer {
         m_timeToShoot.addOption("4.0", 4.0);
         m_timeToShoot.addOption("5.0", 5.0);
 
-        SmartDashboard.putData("Auton Shoot Duration", m_timeToShoot);
+        SmartDashboard.putData("Auton Shoot Duration.2", m_timeToShoot);
 
         configureBindings();
     }
@@ -185,8 +189,8 @@ public class RobotContainer {
     // Y Button -> Run intake and run the shooter flywheel and feeder
     m_operatorController.y().toggleOnTrue(m_shooter.runShooterCommand().alongWith(m_intake.runIntakeCommand()));
     m_operatorController.x().toggleOnTrue(m_shooter.runShooterCommand());
-    m_operatorController.a().toggleOnTrue(m_intake.runSlapUpCommand().withTimeout(0.3));
-    m_operatorController.b().toggleOnTrue(m_intake.runSlapDownCommand().withTimeout(0.25));
+    m_operatorController.a().toggleOnTrue(m_intake.runSlapUpCommand());
+    m_operatorController.b().toggleOnTrue(m_intake.runSlapDownCommand());
 
         // B Button -> Elevator/Arm to human player position, set ball intake to stow when idle
         
@@ -247,15 +251,28 @@ public class RobotContainer {
             PathPlannerPath path = PathPlannerPath.fromPathFile(selectedPath);
 
             return new SequentialCommandGroup(
+                // Step 0: Bootstrap pose from MegaTag1 so gyro is correct before pathfinding
+                Commands.run(() -> {
+                    LimelightHelpers.SetRobotOrientation("limelight-robot", drivetrain.getState().Pose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
+                    PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-robot");
+                    if (LimelightHelpers.validPoseEstimate(mt1)) {
+                        System.out.println("[Localize] Got fix! X=" + mt1.pose.getX() + " Y=" + mt1.pose.getY() + ", Deg=" + mt1.pose.getRotation().getDegrees());
+                        drivetrain.resetPose(mt1.pose);
+                    } else {
+                        System.out.println("[Localize] No valid estimate yet... tagCount=" + (mt1 != null ? mt1.tagCount : "null"));
+                    }
+                }, drivetrain).until(() -> 
+                    LimelightHelpers.validPoseEstimate(LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-robot"))
+                ).withTimeout(60.0),
                 // Step 1: Bootstrap pose from Strategy - ONLY trenches allowed!!!
-                drivetrain.runOnce(() -> {
-                    SmartDashboard.putString("Starting Position", startingPosition.toString());
-                    drivetrain.resetPose(startingPosition);
-                }),
+                // drivetrain.runOnce(() -> {
+                //     SmartDashboard.putString("Starting Position", startingPosition.toString());
+                //     drivetrain.resetPose(startingPosition);
+                // }),
 
                 // Step 2: Drive to shoot position
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Driving to shoot position")),
-                AutoBuilder.pathfindToPose(targetPosition, DriveToPoseCommand.CONSTRAINTS),
+                AutoBuilder.pathfindToPose(startingPosition, DriveToPoseCommand.CONSTRAINTS),
 
                 // Step 3: Shoot preloaded fuel
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Shooting")),

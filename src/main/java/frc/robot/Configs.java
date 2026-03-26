@@ -4,6 +4,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.EncoderConfig;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
@@ -16,6 +17,8 @@ public final class Configs {
   
   public static final class IntakeSubsystem {
     public static final SparkFlexConfig intakeConfig = new SparkFlexConfig();
+    public static final SparkFlexConfig slapConfig = new SparkFlexConfig();
+    public static final EncoderConfig slapEncoderConfig = new EncoderConfig();
     public static final TalonFXConfiguration conveyorConfig = new TalonFXConfiguration();
 
     static {
@@ -25,6 +28,14 @@ public final class Configs {
         .idleMode(IdleMode.kCoast)
         .openLoopRampRate(0.5) // TODO tune this!
         .smartCurrentLimit(40); // TODO tune this!
+
+      slapConfig.inverted(true)
+        .idleMode(IdleMode.kBrake)
+        .openLoopRampRate(0.5)
+        .smartCurrentLimit(40);
+
+      slapEncoderConfig.positionConversionFactor(0.0277);
+        
 
       // Configure basic settings of the conveyor motor (TalonFX)
       conveyorConfig.CurrentLimits.StatorCurrentLimit = 40; // TODO - tune this
@@ -80,7 +91,7 @@ public final class Configs {
         .inverted(true)
         .idleMode(IdleMode.kCoast)
         .openLoopRampRate(1.0)
-        .smartCurrentLimit(60);
+        .smartCurrentLimit(75);
     }
   }
 }

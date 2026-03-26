@@ -30,7 +30,8 @@ public class ShooterSubsystem extends SubsystemBase {
 
   // TODO: Phoenix6 velocity is in rotations per second - tune this value!
   // Original was 5000 RPM ≈ 83.3 RPS
-  private static final double kShootVelocityRPS = 50;
+  private static final double kShootVelocityRPS = 85;
+
   private static final double kVelocityTolerance = 2.0; // RPS
 
   // Initialize flywheel TalonFXs. We will use MotionMagic velocity control for
@@ -137,7 +138,7 @@ public class ShooterSubsystem extends SubsystemBase {
     return this.startEnd(
         () -> {
           this.setFlywheelVelocity(kShootVelocityRPS);
-          this.setFeederPower(0.8); // TODO: Move to constants
+          this.setFeederPower(1.0); // TODO: Move to constants
         },
         () -> {
           this.setFlywheelVelocity(0.0);
@@ -170,12 +171,12 @@ public class ShooterSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // Limelight hello world!s
-    Boolean found_target = LimelightHelpers.getTV("");
+    Boolean found_target = LimelightHelpers.getTV("limelight");
 
     SmartDashboard.putBoolean(("LL Has Target In Sights - Fire away"), found_target);
     // SmartDashboard.putBoolean("LL Has Target", LimelightHelpers.getTV(""));
-    SmartDashboard.putNumber("LL TX", LimelightHelpers.getTX(""));
-    SmartDashboard.putNumber("LL TY", LimelightHelpers.getTY(""));
+    SmartDashboard.putNumber("LL TX", LimelightHelpers.getTX("limelight"));
+    SmartDashboard.putNumber("LL TY", LimelightHelpers.getTY("limelight"));
 
     // Display subsystem values
     SmartDashboard.putNumber("Shooter | Feeder | Applied Output", feederMotor.getDutyCycle().getValueAsDouble());
