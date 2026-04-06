@@ -28,7 +28,7 @@ public final class AutonUtils {
         // Red South
         Map.entry("RedSouthAlpha",    new Pose2d(13.780, 3.250, Rotation2d.fromDegrees(-42.038))),
         Map.entry("RedSouthBravo",    new Pose2d(13.780, 3.250, Rotation2d.fromDegrees(-37.443))),
-        Map.entry("RedSouthDefault",  new Pose2d(13.780, 3.250, Rotation2d.fromDegrees(-42.038)))
+        Map.entry("RedSouthDefault",  new Pose2d(13.532, 3.446, Rotation2d.fromDegrees(163.718)))
     );
     public static Pose2d getShootPosition() {
         var alliance = DriverStation.getAlliance();
