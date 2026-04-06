@@ -11,17 +11,6 @@ import frc.robot.Constants.TargetPositions;
 
 
 public final class AutonUtils {
-    public static final Map<String, Pose2d> AUTON_START_POSES = Map.ofEntries(
-        // Blue North
-        Map.entry("BlueNorth",   new Pose2d(3.454, 7.622, Rotation2d.fromDegrees(0.0))),
-        Map.entry("BlueCenter",  new Pose2d(3.454, 4.041, Rotation2d.fromDegrees(0.0))),
-        Map.entry("BlueSouth",   new Pose2d(3.454, 0.460, Rotation2d.fromDegrees(0.0))),
-
-        // Red North
-        Map.entry("RedNorth",    new Pose2d(13.080, 7.622, Rotation2d.fromDegrees(180.0))),
-        Map.entry("RedCenter",   new Pose2d(13.080, 4.041, Rotation2d.fromDegrees(180.0))),
-        Map.entry("RedSouth",    new Pose2d(13.080, 0.460, Rotation2d.fromDegrees(180.0)))
-    );
 
     public static final Map<String, Pose2d> AUTON_TARGET_POSES = Map.ofEntries(
         // Blue North
@@ -49,16 +38,6 @@ public final class AutonUtils {
         }
 
         return TargetPositions.BLUE_SHOOT;
-    }
-
-    public static Pose2d getActualStartingPos(String strategy) throws IllegalArgumentException {
-        String position = strategy.replace("Alpha", "").replace("Bravo", "").replace("Default", "");
-        Pose2d pose = AUTON_START_POSES.get(position);
-        if (pose == null) {
-            throw new IllegalArgumentException("No starting pose found for position: '" + position + "' from strategy: " + strategy);
-        }
-
-        return pose;
     }
 
     public static Pose2d getDesiredPose(String strategy) throws IllegalArgumentException {
