@@ -170,13 +170,6 @@ public class ShooterSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // Limelight hello world!s
-    Boolean found_target = LimelightHelpers.getTV("limelight-robot");
-
-    // SmartDashboard.putBoolean(("LL Has Target In Sights - Fire away"), found_target);
-    // SmartDashboard.putBoolean("LL Has Target", LimelightHelpers.getTV(""));
-    // SmartDashboard.putNumber("LL TX", LimelightHelpers.getTX("limelight-robot"));
-    // SmartDashboard.putNumber("LL TY", LimelightHelpers.getTY("limelight-robot"));
 
     // Display subsystem values
     SmartDashboard.putNumber("Shooter | Feeder | Applied Output", feederMotor.getDutyCycle().getValueAsDouble());

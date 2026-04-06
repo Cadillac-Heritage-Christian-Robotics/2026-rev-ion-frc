@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Configs;
 import frc.robot.Constants.IntakeSubsystemConstants;
-import frc.robot.Constants.IntakeSubsystemConstants.ArmSetpoints;
 import frc.robot.Constants.IntakeSubsystemConstants.ConveyorSetpoints;
 import frc.robot.Constants.IntakeSubsystemConstants.IntakeSetpoints;
 
@@ -74,10 +73,6 @@ public class IntakeSubsystem extends SubsystemBase {
   private void setIntakePower(double power) {
     intakeMotor.set(power);
   }
-
-  private void setSlapPower(double power) {
-    slapMotor.set(power);
-  }  
 
   /** Set the conveyor motor power in the range of [-1, 1]. */
    private void setConveyorPower(double power) {
