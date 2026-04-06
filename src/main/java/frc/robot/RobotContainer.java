@@ -34,10 +34,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
-import edu.wpi.first.cameraserver.CameraServer;
 
 
 public class RobotContainer {
@@ -46,7 +44,7 @@ public class RobotContainer {
     private final SendableChooser<Boolean> m_autoDefault = new SendableChooser<>();
 
     private final SendableChooser<String> m_autoLocation = new SendableChooser<>();
-    private final SendableChooser<String> m_autoColor = new SendableChooser<>();
+    // private final SendableChooser<String> m_autoColor = new SendableChooser<>();
     private final SendableChooser<String> m_autoStrategy = new SendableChooser<>();
     private final SendableChooser<Double> m_timeToShoot = new SendableChooser<>();
 
@@ -104,7 +102,7 @@ public class RobotContainer {
                 new PIDConstants(5.0, 0, 0)    // rotation PID
             ),
             TunerConstants.PP_CONFIG,           // robot config
-            () -> false,
+            () -> DriverStation.getAlliance().filter(a -> a == Alliance.Red).isPresent(), // automatically mirror auton stuff if we are red
             drivetrain
         );
 
@@ -117,15 +115,6 @@ public class RobotContainer {
 
         // Register your path options
         var alliance = DriverStation.getAlliance();
-        if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
-            System.out.println("Alliance detection worked - safe to remove m_autocolor SelectableChoose from RobotContainer.java!");
-            m_autoColor.setDefaultOption("Red", "Red");
-            m_autoColor.addOption("Blue", "Blue");
-        } else {
-            m_autoColor.setDefaultOption("Blue", "Blue");
-            m_autoColor.addOption("Red", "Red");
-        }
-
 
         m_autoLocation.setDefaultOption("North", "North");
         m_autoLocation.addOption("South", "South");
@@ -134,7 +123,7 @@ public class RobotContainer {
         m_autoStrategy.addOption("Bravo", "Bravo");
 
         // Push it to SmartDashboard so drive team can see it
-        SmartDashboard.putData("Alliance Color", m_autoColor);
+        SmartDashboard.putString("Alliance Color", alliance.get().name());
         SmartDashboard.putData("Starting Location", m_autoLocation);
         SmartDashboard.putData("Auton Strategy", m_autoStrategy);
 
@@ -235,18 +224,18 @@ public class RobotContainer {
              * Stratergy = "Alpha" or "Bravo"
              * The default Strategy is "RedNorthAlpha"
             **/
-            String selectedColor = m_autoColor.getSelected();
+            // String selectedColor = m_autoColor.getSelected();
             String selectedLocation = m_autoLocation.getSelected();
             String selectedStrat = m_autoStrategy.getSelected();
             Boolean autoDefault = m_autoDefault.getSelected();
 
             Double timeToShoot = m_timeToShoot.getSelected();
 
-            String selectedPath = selectedColor + selectedLocation + selectedStrat;
+            String selectedPath = "Blue" + selectedLocation + selectedStrat;
 
             if (Boolean.TRUE.equals(autoDefault)) {
                 System.out.println("Overriding path with default path");
-                selectedPath = selectedColor + selectedLocation + "Default";
+                selectedPath = "Blue" + selectedLocation + "Default";
             }
 
             System.out.println("Selected Path = " + selectedPath);
@@ -255,6 +244,12 @@ public class RobotContainer {
             Pose2d targetPosition = AutonUtils.getDesiredPose(selectedPath);
             System.out.println(targetPosition.toString());
             PathPlannerPath path = PathPlannerPath.fromPathFile(selectedPath);
+
+            boolean isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+            double offset = -1.0;
+            if (isRed) {
+                offset = 1.0;
+            }
 
             return new SequentialCommandGroup(
                 // Step 0: Bootstrap pose from MegaTag1 so gyro is correct before pathfinding
@@ -270,6 +265,7 @@ public class RobotContainer {
                 }, drivetrain).until(() -> 
                     LimelightHelpers.validPoseEstimate(LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-robot"))
                 ).withTimeout(60.0),
+                new DriveToPoseCommand(new Pose2d(drivetrain.getState().Pose.getX() + offset, drivetrain.getState().Pose.getY(), drivetrain.getState().Pose.getRotation())),
                 // Step 1: Bootstrap pose from Strategy - ONLY trenches allowed!!!
                 // drivetrain.runOnce(() -> {
                 //     SmartDashboard.putString("Starting Position", startingPosition.toString());
@@ -277,10 +273,11 @@ public class RobotContainer {
                 // }),
                 // Step 2: Drive to shoot position
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Driving to shoot position")),
-                AutoBuilder.pathfindToPose(targetPosition, DriveToPoseCommand.CONSTRAINTS),
+                AutoBuilder.pathfindToPoseFlipped(targetPosition, DriveToPoseCommand.CONSTRAINTS),
 
                 // Step 3: Shoot preloaded fuel
                 Boolean.TRUE.equals(m_alignToHub.getSelected()) ? alignToHubCommand() : Commands.none(),
+                Commands.runOnce(() -> LimelightHelpers.SetFiducialIDFiltersOverride("limelight-robot", new int[]{})),
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Shooting")),
                 m_shooter.runShooterCommand().withTimeout(timeToShoot).deadlineWith(m_intake.runIntakeCommand()),
 
@@ -293,6 +290,7 @@ public class RobotContainer {
                     ? new SequentialCommandGroup(
                         drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Shooting again")),
                         Boolean.TRUE.equals(m_alignToHub.getSelected()) ? alignToHubCommand() : Commands.none(),
+                        Commands.runOnce(() -> LimelightHelpers.SetFiducialIDFiltersOverride("limelight-robot", new int[]{})),
                         m_shooter.runShooterCommand().withTimeout(timeToShoot * 2).deadlineWith(m_intake.runIntakeCommand())
                     )
                     : Commands.none(),
@@ -330,14 +328,14 @@ public class RobotContainer {
                     .withRotationalRate(rotationRate);
             })
             .until(() -> 
-                LimelightHelpers.getTV("limeligh-robot") && // make sure we actually see a tag!
+                LimelightHelpers.getTV("limelight-robot") && // make sure we actually see a tag!
                 Math.abs(LimelightHelpers.getTX("limelight-robot")) < 2.0
             )
             .withTimeout(1.0),
 
             // Clear the filter after aligning
             Commands.runOnce(() ->
-                LimelightHelpers.SetFiducialIDFiltersOverride("limeligh-robot", new int[]{})
+                LimelightHelpers.SetFiducialIDFiltersOverride("limelight-robot", new int[]{})
             )
         );
     }

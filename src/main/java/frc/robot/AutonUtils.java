@@ -2,12 +2,12 @@ package frc.robot;
 
 import java.util.Map;
 
+import com.pathplanner.lib.util.FlippingUtil;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.Constants.TargetPositions;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 
 public final class AutonUtils {
@@ -20,31 +20,21 @@ public final class AutonUtils {
         // Blue South
         Map.entry("BlueSouthAlpha",   new Pose2d(2.938, 3.348, Rotation2d.fromDegrees(-104.069))),
         Map.entry("BlueSouthBravo",   new Pose2d(2.938, 3.348, Rotation2d.fromDegrees(119.177))),
-        Map.entry("BlueSouthDefault", new Pose2d(2.938, 3.348, Rotation2d.fromDegrees(-104.069))),
-        // Red North
-        Map.entry("RedNorthAlpha",    new Pose2d(13.602, 4.808, Rotation2d.fromDegrees(110.184))),
-        Map.entry("RedNorthBravo",    new Pose2d(13.602, 4.808, Rotation2d.fromDegrees(80.221))),
-        Map.entry("RedNorthDefault",  new Pose2d(13.602, 4.808, Rotation2d.fromDegrees(110.184))),
-        // Red South
-        Map.entry("RedSouthAlpha",    new Pose2d(13.780, 3.250, Rotation2d.fromDegrees(-42.038))),
-        Map.entry("RedSouthBravo",    new Pose2d(13.780, 3.250, Rotation2d.fromDegrees(-37.443))),
-        Map.entry("RedSouthDefault",  new Pose2d(13.532, 3.446, Rotation2d.fromDegrees(163.718)))
+        Map.entry("BlueSouthDefault", new Pose2d(2.938, 3.348, Rotation2d.fromDegrees(-104.069)))
     );
-    public static Pose2d getShootPosition() {
-        var alliance = DriverStation.getAlliance();
-        // TODO - if not set then PANIC
-        if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
-            return TargetPositions.RED_SHOOT;
-        }
-
-        return TargetPositions.BLUE_SHOOT;
-    }
 
     public static Pose2d getDesiredPose(String strategy) throws IllegalArgumentException {
-        Pose2d pose = AUTON_TARGET_POSES.get(strategy);
-        if (pose == null) {
+        Pose2d targetPose = AUTON_TARGET_POSES.get(strategy);
+
+        if (targetPose == null) {
             throw new IllegalArgumentException("No starting pose found for strategy: " + strategy);
         }
-        return pose;
+
+        // Mirror for Red!
+        // if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
+        //    targetPose = FlippingUtil.flipFieldPose(targetPose);
+        // }
+        
+        return targetPose;
     }
 }

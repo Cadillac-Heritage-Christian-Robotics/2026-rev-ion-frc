@@ -13,7 +13,7 @@ public class DriveToPoseCommand extends Command {
     // Speed constraints for pathfinding
     // TODO - tune these for your robot!
     public static final PathConstraints CONSTRAINTS = new PathConstraints(
-        0.5,   // max velocity m/s TODO - tune this!
+        2.0,   // max velocity m/s TODO - tune this!
         0.5,   // max acceleration m/s² TODO - tune this
         Math.PI,     // max angular velocity rad/s
         Math.PI      // max angular acceleration rad/s²
