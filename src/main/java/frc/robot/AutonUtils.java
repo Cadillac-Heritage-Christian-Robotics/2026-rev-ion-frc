@@ -31,9 +31,9 @@ public final class AutonUtils {
         }
 
         // Mirror for Red!
-        if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
-           targetPose = FlippingUtil.flipFieldPose(targetPose);
-        }
+        // if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
+        //    targetPose = FlippingUtil.flipFieldPose(targetPose);
+        // }
         
         return targetPose;
     }

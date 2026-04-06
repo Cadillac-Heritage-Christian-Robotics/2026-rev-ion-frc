@@ -245,6 +245,12 @@ public class RobotContainer {
             System.out.println(targetPosition.toString());
             PathPlannerPath path = PathPlannerPath.fromPathFile(selectedPath);
 
+            boolean isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+            double offset = -1.0;
+            if (isRed) {
+                offset = 1.0;
+            }
+
             return new SequentialCommandGroup(
                 // Step 0: Bootstrap pose from MegaTag1 so gyro is correct before pathfinding
                 Commands.run(() -> {
@@ -259,6 +265,7 @@ public class RobotContainer {
                 }, drivetrain).until(() -> 
                     LimelightHelpers.validPoseEstimate(LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-robot"))
                 ).withTimeout(60.0),
+                new DriveToPoseCommand(new Pose2d(drivetrain.getState().Pose.getX() + offset, drivetrain.getState().Pose.getY(), drivetrain.getState().Pose.getRotation())),
                 // Step 1: Bootstrap pose from Strategy - ONLY trenches allowed!!!
                 // drivetrain.runOnce(() -> {
                 //     SmartDashboard.putString("Starting Position", startingPosition.toString());
@@ -266,10 +273,11 @@ public class RobotContainer {
                 // }),
                 // Step 2: Drive to shoot position
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Driving to shoot position")),
-                AutoBuilder.pathfindToPose(targetPosition, DriveToPoseCommand.CONSTRAINTS),
+                AutoBuilder.pathfindToPoseFlipped(targetPosition, DriveToPoseCommand.CONSTRAINTS),
 
                 // Step 3: Shoot preloaded fuel
                 Boolean.TRUE.equals(m_alignToHub.getSelected()) ? alignToHubCommand() : Commands.none(),
+                Commands.runOnce(() -> LimelightHelpers.SetFiducialIDFiltersOverride("limelight-robot", new int[]{})),
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Shooting")),
                 m_shooter.runShooterCommand().withTimeout(timeToShoot).deadlineWith(m_intake.runIntakeCommand()),
 
@@ -282,6 +290,7 @@ public class RobotContainer {
                     ? new SequentialCommandGroup(
                         drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Shooting again")),
                         Boolean.TRUE.equals(m_alignToHub.getSelected()) ? alignToHubCommand() : Commands.none(),
+                        Commands.runOnce(() -> LimelightHelpers.SetFiducialIDFiltersOverride("limelight-robot", new int[]{})),
                         m_shooter.runShooterCommand().withTimeout(timeToShoot * 2).deadlineWith(m_intake.runIntakeCommand())
                     )
                     : Commands.none(),
@@ -319,14 +328,14 @@ public class RobotContainer {
                     .withRotationalRate(rotationRate);
             })
             .until(() -> 
-                LimelightHelpers.getTV("limeligh-robot") && // make sure we actually see a tag!
+                LimelightHelpers.getTV("limelight-robot") && // make sure we actually see a tag!
                 Math.abs(LimelightHelpers.getTX("limelight-robot")) < 2.0
             )
             .withTimeout(1.0),
 
             // Clear the filter after aligning
             Commands.runOnce(() ->
-                LimelightHelpers.SetFiducialIDFiltersOverride("limeligh-robot", new int[]{})
+                LimelightHelpers.SetFiducialIDFiltersOverride("limelight-robot", new int[]{})
             )
         );
     }
