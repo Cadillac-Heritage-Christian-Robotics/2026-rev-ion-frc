@@ -2,8 +2,12 @@ package frc.robot;
 
 import java.util.Map;
 
+import com.pathplanner.lib.util.FlippingUtil;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 
 public final class AutonUtils {
@@ -20,10 +24,17 @@ public final class AutonUtils {
     );
 
     public static Pose2d getDesiredPose(String strategy) throws IllegalArgumentException {
-        Pose2d pose = AUTON_TARGET_POSES.get(strategy);
-        if (pose == null) {
+        Pose2d targetPose = AUTON_TARGET_POSES.get(strategy);
+
+        if (targetPose == null) {
             throw new IllegalArgumentException("No starting pose found for strategy: " + strategy);
         }
-        return pose;
+
+        // Mirror for Red!
+        if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
+           targetPose = FlippingUtil.flipFieldPose(targetPose);
+        }
+        
+        return targetPose;
     }
 }
