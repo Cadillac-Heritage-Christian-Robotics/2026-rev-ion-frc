@@ -28,6 +28,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -48,6 +49,8 @@ public class RobotContainer {
     private final SendableChooser<String> m_autoColor = new SendableChooser<>();
     private final SendableChooser<String> m_autoStrategy = new SendableChooser<>();
     private final SendableChooser<Double> m_timeToShoot = new SendableChooser<>();
+
+    private final SendableChooser<Boolean> m_alignToHub = new SendableChooser<>();
 
 
     // Subsystems
@@ -144,6 +147,10 @@ public class RobotContainer {
         m_timeToShoot.addOption("2.0", 2.0);
         m_timeToShoot.addOption("4.0", 4.0);
         m_timeToShoot.addOption("5.0", 5.0);
+
+        m_alignToHub.setDefaultOption("No Shooting Align", false);
+        m_alignToHub.addOption("Align Shooting", true);
+        SmartDashboard.putData("Align To Hub", m_alignToHub);
 
         SmartDashboard.putData("Auton Shoot Duration.2", m_timeToShoot);
 
@@ -246,8 +253,7 @@ public class RobotContainer {
 
             // Manually curated list of starting positions based on with PathPlanner we are using.
             Pose2d targetPosition = AutonUtils.getDesiredPose(selectedPath);
-            Pose2d startingPosition = AutonUtils.getActualStartingPos(selectedPath);
-
+            System.out.println(targetPosition.toString());
             PathPlannerPath path = PathPlannerPath.fromPathFile(selectedPath);
 
             return new SequentialCommandGroup(
@@ -269,24 +275,25 @@ public class RobotContainer {
                 //     SmartDashboard.putString("Starting Position", startingPosition.toString());
                 //     drivetrain.resetPose(startingPosition);
                 // }),
-
                 // Step 2: Drive to shoot position
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Driving to shoot position")),
-                AutoBuilder.pathfindToPose(startingPosition, DriveToPoseCommand.CONSTRAINTS),
+                AutoBuilder.pathfindToPose(targetPosition, DriveToPoseCommand.CONSTRAINTS),
 
                 // Step 3: Shoot preloaded fuel
+                Boolean.TRUE.equals(m_alignToHub.getSelected()) ? alignToHubCommand() : Commands.none(),
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Shooting")),
-                m_shooter.runShooterCommand().withTimeout(timeToShoot),
+                m_shooter.runShooterCommand().withTimeout(timeToShoot).deadlineWith(m_intake.runIntakeCommand()),
 
                 // Step 4: Always run the selected path (intake via event markers)
-                drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Running path")),
-                AutoBuilder.pathfindThenFollowPath(path, DriveToPoseCommand.CONSTRAINTS),
+                drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Running path2")),
+                AutoBuilder.followPath(path),
 
                 // Step 5: Shoot again only if Alpha/Bravo strategy (not default)
                 Boolean.FALSE.equals(autoDefault)
                     ? new SequentialCommandGroup(
                         drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Shooting again")),
-                        m_shooter.runShooterCommand().withTimeout(timeToShoot * 2)
+                        Boolean.TRUE.equals(m_alignToHub.getSelected()) ? alignToHubCommand() : Commands.none(),
+                        m_shooter.runShooterCommand().withTimeout(timeToShoot * 2).deadlineWith(m_intake.runIntakeCommand())
                     )
                     : Commands.none(),
 
@@ -297,5 +304,41 @@ public class RobotContainer {
             e.printStackTrace();
             return m_DriveForwardCommand;
         }
+    }
+    public Command alignToHubCommand() {
+        // Determine which tags to use based on alliance
+        boolean isRed = DriverStation.getAlliance()
+            .orElse(Alliance.Blue) == Alliance.Red;
+
+        int[] hubTags = isRed ? new int[]{9, 10} : new int[]{25, 26};
+
+        return Commands.sequence(
+            // Set filter to only see hub center tags
+            Commands.runOnce(() -> 
+                LimelightHelpers.SetFiducialIDFiltersOverride("limelight-robot", hubTags)
+            ),
+
+            // Align to hub
+            drivetrain.applyRequest(() -> {
+                double tx = LimelightHelpers.getTX("limelight-robot");
+                double kP = 0.05; // tune this!
+                double rotationRate = -tx * kP;
+
+                return drive
+                    .withVelocityX(0)
+                    .withVelocityY(0)
+                    .withRotationalRate(rotationRate);
+            })
+            .until(() -> 
+                LimelightHelpers.getTV("limeligh-robot") && // make sure we actually see a tag!
+                Math.abs(LimelightHelpers.getTX("limelight-robot")) < 2.0
+            )
+            .withTimeout(1.0),
+
+            // Clear the filter after aligning
+            Commands.runOnce(() ->
+                LimelightHelpers.SetFiducialIDFiltersOverride("limeligh-robot", new int[]{})
+            )
+        );
     }
 } // end of RobotContainer

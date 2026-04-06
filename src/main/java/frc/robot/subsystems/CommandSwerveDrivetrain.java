@@ -238,19 +238,23 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             );
             m_hasAppliedOperatorPerspective = true;
         }
+        Pose2d currentPose = getState().Pose;
+        SmartDashboard.putNumber("RobotPoseX", currentPose.getX());
+        SmartDashboard.putNumber("RobotPoseY", currentPose.getY());
+        SmartDashboard.putNumber("RobotPoseDegrees", currentPose.getRotation().getDegrees());
 
         // Feed Limelight into odometry
         if (DriverStation.isAutonomous()) {
             LimelightHelpers.SetRobotOrientation(
-                "limelight",
+                "limelight-robot",
                 getState().Pose.getRotation().getDegrees(),
                 0, 0, 0, 0, 0
             );
         
             PoseEstimate estimate = LimelightHelpers
-                .getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
+                .getBotPoseEstimate_wpiBlue_MegaTag2("limelight-robot");
 
-            if (LimelightHelpers.validPoseEstimate(estimate)) {
+            if (LimelightHelpers.validPoseEstimate(estimate) && estimate.tagCount >=1) {
                 addVisionMeasurement(
                     estimate.pose,
                     estimate.timestampSeconds
