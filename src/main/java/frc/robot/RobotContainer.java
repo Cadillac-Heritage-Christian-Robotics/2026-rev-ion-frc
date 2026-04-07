@@ -231,6 +231,16 @@ public class RobotContainer {
 
             Double timeToShoot = m_timeToShoot.getSelected();
 
+            boolean isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+
+            // It's dumb I know but since Red is "mirror" we have to manually mirror north/south
+            if (isRed) {
+                switch (selectedLocation) {
+                    case "North" -> selectedLocation = "South";
+                    case "South" -> selectedLocation = "North";
+                }
+            }
+
             String selectedPath = "Blue" + selectedLocation + selectedStrat;
 
             if (Boolean.TRUE.equals(autoDefault)) {
@@ -245,7 +255,6 @@ public class RobotContainer {
             System.out.println(targetPosition.toString());
             PathPlannerPath path = PathPlannerPath.fromPathFile(selectedPath);
 
-            boolean isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
             double offset = -1.0;
             if (isRed) {
                 offset = 1.0;

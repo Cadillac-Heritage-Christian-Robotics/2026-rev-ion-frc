@@ -18,9 +18,9 @@ public final class AutonUtils {
         Map.entry("BlueNorthBravo",   new Pose2d(2.938, 4.808, Rotation2d.fromDegrees(-119.775))),
         Map.entry("BlueNorthDefault", new Pose2d(2.525, 4.456, Rotation2d.fromDegrees(-18.759))),
         // Blue South
-        Map.entry("BlueSouthAlpha",   new Pose2d(2.938, 3.348, Rotation2d.fromDegrees(-104.069))),
-        Map.entry("BlueSouthBravo",   new Pose2d(2.938, 3.348, Rotation2d.fromDegrees(119.177))),
-        Map.entry("BlueSouthDefault", new Pose2d(2.938, 3.348, Rotation2d.fromDegrees(-104.069)))
+        Map.entry("BlueSouthAlpha",   new Pose2d(2.938, 3.348, Rotation2d.fromDegrees(22))),
+        Map.entry("BlueSouthBravo",   new Pose2d(2.938, 3.348, Rotation2d.fromDegrees(22))),
+        Map.entry("BlueSouthDefault", new Pose2d(2.938, 3.348, Rotation2d.fromDegrees(22)))
     );
 
     public static Pose2d getDesiredPose(String strategy) throws IllegalArgumentException {
