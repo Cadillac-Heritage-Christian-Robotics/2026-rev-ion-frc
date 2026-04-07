@@ -288,8 +288,8 @@ public class RobotContainer {
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Optional Alignment")),
 
                 // // Step 3: Shoot preloaded fuel
-                // Boolean.TRUE.equals(m_alignToHub.getSelected()) ? alignToHubCommand() : Commands.none(),
-                // Commands.runOnce(() -> LimelightHelpers.SetFiducialIDFiltersOverride("limelight-robot", new int[]{})),
+                Boolean.TRUE.equals(m_alignToHub.getSelected()) ? alignToHubCommand() : Commands.none(),
+                Commands.runOnce(() -> LimelightHelpers.SetFiducialIDFiltersOverride("limelight-robot", new int[]{})),
                 // drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Shooting")),
                 // m_shooter.runShooterCommand().withTimeout(timeToShoot).deadlineWith(m_intake.runIntakeCommand()),
 
@@ -330,6 +330,8 @@ public class RobotContainer {
 
         return Commands.sequence(
             // Set filter to only see hub center tags
+            drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Running Alignment")),
+
             Commands.runOnce(() -> 
                 LimelightHelpers.SetFiducialIDFiltersOverride("limelight-robot", hubTags)
             ),
@@ -337,6 +339,7 @@ public class RobotContainer {
             // Align to hub
             drivetrain.applyRequest(() -> {
                 double tx = LimelightHelpers.getTX("limelight-robot");
+                SmartDashboard.putNumber("Alignment TX", tx);
                 double kP = 0.05; // tune this!
                 double rotationRate = -tx * kP;
 
@@ -349,7 +352,8 @@ public class RobotContainer {
                 LimelightHelpers.getTV("limelight-robot") && // make sure we actually see a tag!
                 Math.abs(LimelightHelpers.getTX("limelight-robot")) < 2.0
             )
-            .withTimeout(1.0),
+            .withTimeout(5.0),
+            drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Done with Alignment")),
 
             // Clear the filter after aligning
             Commands.runOnce(() ->
