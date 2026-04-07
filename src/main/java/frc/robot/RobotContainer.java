@@ -7,6 +7,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.*;
 
 import java.io.IOException;
+import java.util.concurrent.BlockingDeque;
 
 import org.json.simple.parser.ParseException;
 
@@ -41,16 +42,13 @@ import frc.robot.subsystems.ShooterSubsystem;
 public class RobotContainer {
 
     // The robot's subsystems and commands are defined here...
-    private final SendableChooser<Boolean> m_autoDefault = new SendableChooser<>();
+    // private final SendableChooser<Boolean> m_autoDefault = new SendableChooser<>();
 
     private final SendableChooser<String> m_autoLocation = new SendableChooser<>();
-    // private final SendableChooser<String> m_autoColor = new SendableChooser<>();
     private final SendableChooser<String> m_autoStrategy = new SendableChooser<>();
     private final SendableChooser<Double> m_timeToShoot = new SendableChooser<>();
 
     private final SendableChooser<Boolean> m_alignToHub = new SendableChooser<>();
-
-    private final SendableChooser<Boolean> m_dahlbergTest = new SendableChooser<>();
 
 
     // Subsystems
@@ -86,8 +84,6 @@ public class RobotContainer {
     private final DriveForwardCommand m_DriveForwardCommand = new DriveForwardCommand(drivetrain);
 
     public RobotContainer() {
-        System.out.println("Alliance at configure time: " + DriverStation.getAlliance());
-
         // Configure AutoBuilder for PathPlanner
         AutoBuilder.configure(
             () -> drivetrain.getState().Pose,           // how to get current pose
@@ -121,7 +117,8 @@ public class RobotContainer {
         m_autoLocation.setDefaultOption("North", "North");
         m_autoLocation.addOption("South", "South");
 
-        m_autoStrategy.setDefaultOption("Alpha", "Alpha");
+        m_autoStrategy.setDefaultOption("Default", "Default");
+        m_autoStrategy.addOption("Alpha", "Alpha");
         m_autoStrategy.addOption("Bravo", "Bravo");
 
         // Push it to SmartDashboard so drive team can see it
@@ -129,25 +126,20 @@ public class RobotContainer {
         SmartDashboard.putData("Starting Location", m_autoLocation);
         SmartDashboard.putData("Auton Strategy", m_autoStrategy);
 
-        m_autoDefault.setDefaultOption("Use Default Strategy", true);
-        m_autoDefault.addOption("Use Alpha|Bravo Strategy", false);
-        SmartDashboard.putData("Override Auton Strategy", m_autoDefault);
-
         m_timeToShoot.setDefaultOption("3.0", 3.0);
         m_timeToShoot.addOption("1.0", 1.0);
         m_timeToShoot.addOption("2.0", 2.0);
         m_timeToShoot.addOption("4.0", 4.0);
         m_timeToShoot.addOption("5.0", 5.0);
+        m_timeToShoot.addOption("6.0", 6.0);
+        m_timeToShoot.addOption("7.0", 7.0);
+        m_timeToShoot.addOption("8.0", 8.0);
 
         m_alignToHub.setDefaultOption("No Shooting Align", false);
         m_alignToHub.addOption("Align Shooting", true);
         SmartDashboard.putData("Align To Hub", m_alignToHub);
 
-        m_dahlbergTest.setDefaultOption("Use Dahlberg test", true);
-        m_dahlbergTest.addOption("Don't Use Dahlberg test", false);
-        SmartDashboard.putData("Use Dahlberg Test", m_dahlbergTest);
-
-        SmartDashboard.putData("Auton Shoot Duration.2", m_timeToShoot);
+        SmartDashboard.putData("Auton Shoot Duration", m_timeToShoot);
 
         configureBindings();
     }
@@ -233,13 +225,11 @@ public class RobotContainer {
             // String selectedColor = m_autoColor.getSelected();
             String selectedLocation = m_autoLocation.getSelected();
             String selectedStrat = m_autoStrategy.getSelected();
-            Boolean autoDefault = m_autoDefault.getSelected();
+            // Boolean autoDefault = m_autoDefault.getSelected();
 
             Double timeToShoot = m_timeToShoot.getSelected();
 
             boolean isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
-
-            // Boolean useDahlbergTest = m_dahlbergTest.getSelected();
 
             // It's dumb I know but since Red is "mirror" we have to manually mirror north/south
             if (isRed) {
@@ -252,10 +242,12 @@ public class RobotContainer {
             String selectedPath = "Blue" + selectedLocation + selectedStrat;
             String nextPath = "";
 
-            if (Boolean.TRUE.equals(autoDefault)) {
-                System.out.println("Overriding path with default path");
-                selectedPath = "Blue" + selectedLocation + "Default";
-            }
+            // if (Boolean.TRUE.equals(autoDefault)) {
+            //     System.out.println("Overriding path with default path");
+            //     selectedPath = "Blue" + selectedLocation + "Default";
+            // }
+
+            Boolean usingDefault = selectedStrat.equals("Default");
 
             System.out.println("Selected Path = " + selectedPath);
 
@@ -263,12 +255,7 @@ public class RobotContainer {
             Pose2d targetPosition = AutonUtils.getDesiredPose(selectedPath);
             System.out.println(targetPosition.toString());
 
-            // if (useDahlbergTest) {
-            //     selectedPath = "Test1";
-            //     nextPath = "Test2";
-            // }
             PathPlannerPath path = PathPlannerPath.fromPathFile(selectedPath);
-            // PathPlannerPath path2 = PathPlannerPath.fromPathFile(nextPath);
 
             double offset = -1.0;
             if (isRed) {
@@ -317,7 +304,7 @@ public class RobotContainer {
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Done with path")),
 
                 // Step 5: Shoot again only if Alpha/Bravo strategy (not default)
-                Boolean.FALSE.equals(autoDefault)
+                Boolean.FALSE.equals(usingDefault)
                     ? new SequentialCommandGroup(
                         drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Shooting again")),
                         Boolean.TRUE.equals(m_alignToHub.getSelected()) ? alignToHubCommand() : Commands.none(),
