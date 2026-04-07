@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
@@ -32,11 +33,12 @@ import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
  * Subsystem so it can easily be used in command-based projects.
  */
 @SuppressWarnings("unused")
-
 public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem {
     private static final double kSimLoopPeriod = 0.005; // 5 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
+
+    private final Field2d m_field = new Field2d();
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
     private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -130,6 +132,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
+        SmartDashboard.putData("Field", m_field);
     }
 
     /**
@@ -239,12 +242,17 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             m_hasAppliedOperatorPerspective = true;
         }
         Pose2d currentPose = getState().Pose;
+        // SmartDashboard.putData("Pose", currentPose);
         SmartDashboard.putNumber("RobotPoseX", currentPose.getX());
         SmartDashboard.putNumber("RobotPoseY", currentPose.getY());
         SmartDashboard.putNumber("RobotPoseDegrees", currentPose.getRotation().getDegrees());
+        m_field.setRobotPose(getState().Pose);
 
         // Feed Limelight into odometry
         if (DriverStation.isAutonomous()) {
+            SmartDashboard.putNumber("LL TX During Align", LimelightHelpers.getTX("limelight-robot"));
+            SmartDashboard.putBoolean("LL TV During Align", LimelightHelpers.getTV("limelight-robot"));
+
             LimelightHelpers.SetRobotOrientation(
                 "limelight-robot",
                 getState().Pose.getRotation().getDegrees(),

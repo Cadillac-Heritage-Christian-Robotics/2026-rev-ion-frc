@@ -50,6 +50,8 @@ public class RobotContainer {
 
     private final SendableChooser<Boolean> m_alignToHub = new SendableChooser<>();
 
+    private final SendableChooser<Boolean> m_dahlbergTest = new SendableChooser<>();
+
 
     // Subsystems
     private final IntakeSubsystem m_intake = new IntakeSubsystem();
@@ -123,7 +125,7 @@ public class RobotContainer {
         m_autoStrategy.addOption("Bravo", "Bravo");
 
         // Push it to SmartDashboard so drive team can see it
-        SmartDashboard.putString("Alliance Color", alliance.get().name());
+        // SmartDashboard.putString("Alliance Color", alliance.get().name());
         SmartDashboard.putData("Starting Location", m_autoLocation);
         SmartDashboard.putData("Auton Strategy", m_autoStrategy);
 
@@ -140,6 +142,10 @@ public class RobotContainer {
         m_alignToHub.setDefaultOption("No Shooting Align", false);
         m_alignToHub.addOption("Align Shooting", true);
         SmartDashboard.putData("Align To Hub", m_alignToHub);
+
+        m_dahlbergTest.setDefaultOption("Use Dahlberg test", true);
+        m_dahlbergTest.addOption("Don't Use Dahlberg test", false);
+        SmartDashboard.putData("Use Dahlberg Test", m_dahlbergTest);
 
         SmartDashboard.putData("Auton Shoot Duration.2", m_timeToShoot);
 
@@ -233,6 +239,8 @@ public class RobotContainer {
 
             boolean isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
 
+            Boolean useDahlbergTest = m_dahlbergTest.getSelected();
+
             // It's dumb I know but since Red is "mirror" we have to manually mirror north/south
             if (isRed) {
                 switch (selectedLocation) {
@@ -242,6 +250,7 @@ public class RobotContainer {
             }
 
             String selectedPath = "Blue" + selectedLocation + selectedStrat;
+            String nextPath = "";
 
             if (Boolean.TRUE.equals(autoDefault)) {
                 System.out.println("Overriding path with default path");
@@ -253,46 +262,56 @@ public class RobotContainer {
             // Manually curated list of starting positions based on with PathPlanner we are using.
             Pose2d targetPosition = AutonUtils.getDesiredPose(selectedPath);
             System.out.println(targetPosition.toString());
-            PathPlannerPath path = PathPlannerPath.fromPathFile(selectedPath);
 
-            double offset = -1.0;
-            if (isRed) {
-                offset = 1.0;
+            if (useDahlbergTest) {
+                selectedPath = "Test1";
+                nextPath = "Test2";
             }
+            PathPlannerPath path = PathPlannerPath.fromPathFile(selectedPath);
+            PathPlannerPath path2 = PathPlannerPath.fromPathFile(nextPath);
+
+            // double offset = -1.0;
+            // if (isRed) {
+            //     offset = 1.0;
+            // }
 
             return new SequentialCommandGroup(
                 // Step 0: Bootstrap pose from MegaTag1 so gyro is correct before pathfinding
-                Commands.run(() -> {
-                    LimelightHelpers.SetRobotOrientation("limelight-robot", drivetrain.getState().Pose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
-                    PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-robot");
-                    if (LimelightHelpers.validPoseEstimate(mt1)) {
-                        System.out.println("[Localize] Got fix! X=" + mt1.pose.getX() + " Y=" + mt1.pose.getY() + ", Deg=" + mt1.pose.getRotation().getDegrees());
-                        drivetrain.resetPose(mt1.pose);
-                    } else {
-                        System.out.println("[Localize] No valid estimate yet... tagCount=" + (mt1 != null ? mt1.tagCount : "null"));
-                    }
-                }, drivetrain).until(() -> 
-                    LimelightHelpers.validPoseEstimate(LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-robot"))
-                ).withTimeout(60.0),
-                new DriveToPoseCommand(new Pose2d(drivetrain.getState().Pose.getX() + offset, drivetrain.getState().Pose.getY(), drivetrain.getState().Pose.getRotation())),
-                // Step 1: Bootstrap pose from Strategy - ONLY trenches allowed!!!
-                // drivetrain.runOnce(() -> {
-                //     SmartDashboard.putString("Starting Position", startingPosition.toString());
-                //     drivetrain.resetPose(startingPosition);
-                // }),
-                // Step 2: Drive to shoot position
-                drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Driving to shoot position")),
-                AutoBuilder.pathfindToPoseFlipped(targetPosition, DriveToPoseCommand.CONSTRAINTS),
+                // Commands.run(() -> {
+                //     LimelightHelpers.SetRobotOrientation("limelight-robot", drivetrain.getState().Pose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
+                //     PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-robot");
+                //     if (LimelightHelpers.validPoseEstimate(mt1)) {
+                //         System.out.println("[Localize] Got fix! X=" + mt1.pose.getX() + " Y=" + mt1.pose.getY() + ", Deg=" + mt1.pose.getRotation().getDegrees());
+                //         drivetrain.resetPose(mt1.pose);
+                //     } else {
+                //         System.out.println("[Localize] No valid estimate yet... tagCount=" + (mt1 != null ? mt1.tagCount : "null"));
+                //     }
+                // }, drivetrain).until(() -> 
+                //     LimelightHelpers.validPoseEstimate(LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-robot"))
+                // ).withTimeout(60.0),
+                // AutoBuilder.pathfindToPoseFlipped(new Pose2d(drivetrain.getState().Pose.getX() - 1.0, drivetrain.getState().Pose.getY(), drivetrain.getState().Pose.getRotation()), DriveToPoseCommand.CONSTRAINTS),
+                // // Step 1: Bootstrap pose from Strategy - ONLY trenches allowed!!!
+                // // drivetrain.runOnce(() -> {
+                // //     SmartDashboard.putString("Starting Position", startingPosition.toString());
+                // //     drivetrain.resetPose(startingPosition);
+                // // }),
+                // // Step 2: Drive to shoot position
+                // drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Driving to shoot position")),
+                // AutoBuilder.pathfindToPoseFlipped(targetPosition, DriveToPoseCommand.CONSTRAINTS),
 
-                // Step 3: Shoot preloaded fuel
-                Boolean.TRUE.equals(m_alignToHub.getSelected()) ? alignToHubCommand() : Commands.none(),
+                // // Step 3: Shoot preloaded fuel
+                // Boolean.TRUE.equals(m_alignToHub.getSelected()) ? alignToHubCommand() : Commands.none(),
+                // Commands.runOnce(() -> LimelightHelpers.SetFiducialIDFiltersOverride("limelight-robot", new int[]{})),
+                // drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Shooting")),
+                // m_shooter.runShooterCommand().withTimeout(timeToShoot).deadlineWith(m_intake.runIntakeCommand()),
+
+                // // Step 4: Always run the selected path (intake via event markers)
+                // drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Running path2")),
+                AutoBuilder.followPath(path),
                 Commands.runOnce(() -> LimelightHelpers.SetFiducialIDFiltersOverride("limelight-robot", new int[]{})),
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Shooting")),
                 m_shooter.runShooterCommand().withTimeout(timeToShoot).deadlineWith(m_intake.runIntakeCommand()),
-
-                // Step 4: Always run the selected path (intake via event markers)
-                drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Running path2")),
-                AutoBuilder.followPath(path),
+                AutoBuilder.followPath(path2),
 
                 // Step 5: Shoot again only if Alpha/Bravo strategy (not default)
                 Boolean.FALSE.equals(autoDefault)
