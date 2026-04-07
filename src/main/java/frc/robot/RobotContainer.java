@@ -116,7 +116,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("SlapArmUp",   m_intake.runSlapUpCommand());
 
         // Register your path options
-        var alliance = DriverStation.getAlliance();
+        // var alliance = DriverStation.getAlliance();
 
         m_autoLocation.setDefaultOption("North", "North");
         m_autoLocation.addOption("South", "South");
@@ -239,7 +239,7 @@ public class RobotContainer {
 
             boolean isRed = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
 
-            Boolean useDahlbergTest = m_dahlbergTest.getSelected();
+            // Boolean useDahlbergTest = m_dahlbergTest.getSelected();
 
             // It's dumb I know but since Red is "mirror" we have to manually mirror north/south
             if (isRed) {
@@ -263,41 +263,42 @@ public class RobotContainer {
             Pose2d targetPosition = AutonUtils.getDesiredPose(selectedPath);
             System.out.println(targetPosition.toString());
 
-            if (useDahlbergTest) {
-                selectedPath = "Test1";
-                nextPath = "Test2";
-            }
-            PathPlannerPath path = PathPlannerPath.fromPathFile(selectedPath);
-            PathPlannerPath path2 = PathPlannerPath.fromPathFile(nextPath);
-
-            // double offset = -1.0;
-            // if (isRed) {
-            //     offset = 1.0;
+            // if (useDahlbergTest) {
+            //     selectedPath = "Test1";
+            //     nextPath = "Test2";
             // }
+            PathPlannerPath path = PathPlannerPath.fromPathFile(selectedPath);
+            // PathPlannerPath path2 = PathPlannerPath.fromPathFile(nextPath);
+
+            double offset = -1.0;
+            if (isRed) {
+                offset = 1.0;
+            }
 
             return new SequentialCommandGroup(
                 // Step 0: Bootstrap pose from MegaTag1 so gyro is correct before pathfinding
-                // Commands.run(() -> {
-                //     LimelightHelpers.SetRobotOrientation("limelight-robot", drivetrain.getState().Pose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
-                //     PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-robot");
-                //     if (LimelightHelpers.validPoseEstimate(mt1)) {
-                //         System.out.println("[Localize] Got fix! X=" + mt1.pose.getX() + " Y=" + mt1.pose.getY() + ", Deg=" + mt1.pose.getRotation().getDegrees());
-                //         drivetrain.resetPose(mt1.pose);
-                //     } else {
-                //         System.out.println("[Localize] No valid estimate yet... tagCount=" + (mt1 != null ? mt1.tagCount : "null"));
-                //     }
-                // }, drivetrain).until(() -> 
-                //     LimelightHelpers.validPoseEstimate(LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-robot"))
-                // ).withTimeout(60.0),
-                // AutoBuilder.pathfindToPoseFlipped(new Pose2d(drivetrain.getState().Pose.getX() - 1.0, drivetrain.getState().Pose.getY(), drivetrain.getState().Pose.getRotation()), DriveToPoseCommand.CONSTRAINTS),
-                // // Step 1: Bootstrap pose from Strategy - ONLY trenches allowed!!!
-                // // drivetrain.runOnce(() -> {
-                // //     SmartDashboard.putString("Starting Position", startingPosition.toString());
-                // //     drivetrain.resetPose(startingPosition);
-                // // }),
-                // // Step 2: Drive to shoot position
-                // drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Driving to shoot position")),
-                // AutoBuilder.pathfindToPoseFlipped(targetPosition, DriveToPoseCommand.CONSTRAINTS),
+                Commands.run(() -> {
+                    LimelightHelpers.SetRobotOrientation("limelight-robot", drivetrain.getState().Pose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
+                    PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-robot");
+                    if (LimelightHelpers.validPoseEstimate(mt1)) {
+                        System.out.println("[Localize] Got fix! X=" + mt1.pose.getX() + " Y=" + mt1.pose.getY() + ", Deg=" + mt1.pose.getRotation().getDegrees());
+                        drivetrain.resetPose(mt1.pose);
+                    } else {
+                        System.out.println("[Localize] No valid estimate yet... tagCount=" + (mt1 != null ? mt1.tagCount : "null"));
+                    }
+                }, drivetrain).until(() -> 
+                    LimelightHelpers.validPoseEstimate(LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-robot"))
+                ).withTimeout(2.0),
+                AutoBuilder.pathfindToPose(new Pose2d(drivetrain.getState().Pose.getX() + offset, drivetrain.getState().Pose.getY(), drivetrain.getState().Pose.getRotation()), DriveToPoseCommand.CONSTRAINTS),
+                // Step 1: Bootstrap pose from Strategy - ONLY trenches allowed!!!
+                // drivetrain.runOnce(() -> {
+                //     SmartDashboard.putString("Starting Position", startingPosition.toString());
+                //     drivetrain.resetPose(startingPosition);
+                // }),
+                // Step 2: Drive to shoot position
+                drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Driving to shoot position")),
+                AutoBuilder.pathfindToPoseFlipped(targetPosition, DriveToPoseCommand.CONSTRAINTS),
+                drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Optional Alignment")),
 
                 // // Step 3: Shoot preloaded fuel
                 // Boolean.TRUE.equals(m_alignToHub.getSelected()) ? alignToHubCommand() : Commands.none(),
@@ -307,11 +308,13 @@ public class RobotContainer {
 
                 // // Step 4: Always run the selected path (intake via event markers)
                 // drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Running path2")),
-                AutoBuilder.followPath(path),
+                // AutoBuilder.pathfindThenFollowPath(path, DriveToPoseCommand.CONSTRAINTS),
                 Commands.runOnce(() -> LimelightHelpers.SetFiducialIDFiltersOverride("limelight-robot", new int[]{})),
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Shooting")),
                 m_shooter.runShooterCommand().withTimeout(timeToShoot).deadlineWith(m_intake.runIntakeCommand()),
-                AutoBuilder.followPath(path2),
+                drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Running Path")),
+                AutoBuilder.pathfindThenFollowPath(path, DriveToPoseCommand.CONSTRAINTS),
+                drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Done with path")),
 
                 // Step 5: Shoot again only if Alpha/Bravo strategy (not default)
                 Boolean.FALSE.equals(autoDefault)
