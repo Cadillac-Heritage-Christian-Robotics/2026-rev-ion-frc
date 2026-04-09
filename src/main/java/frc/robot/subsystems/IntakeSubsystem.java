@@ -103,7 +103,7 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
    public Command runSlapDownCommand() {
-    return new InstantCommand(() -> {this.setSlapPosition(0.005);});
+    return new InstantCommand(() -> {this.setSlapPosition(0.04);});
     }
 
   /**

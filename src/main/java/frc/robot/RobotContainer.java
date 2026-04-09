@@ -340,7 +340,7 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> {
                 double tx = LimelightHelpers.getTX("limelight-robot");
                 SmartDashboard.putNumber("Alignment TX", tx);
-                double kP = 0.05; // tune this!
+                double kP = 0.15; // tune this!
                 double rotationRate = -tx * kP;
 
                 return drive
