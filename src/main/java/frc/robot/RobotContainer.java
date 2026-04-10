@@ -8,7 +8,6 @@ import static edu.wpi.first.units.Units.*;
 
 import java.io.IOException;
 import java.util.Set;
-import java.util.concurrent.BlockingDeque;
 
 import org.json.simple.parser.ParseException;
 
@@ -37,6 +36,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
@@ -70,10 +70,8 @@ public class RobotContainer {
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
             .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
-    // private final SwerveRequest.SwerveDriveBrake brake = new
-    // SwerveRequest.SwerveDriveBrake();
-    // private final SwerveRequest.PointWheelsAt point = new
-    // SwerveRequest.PointWheelsAt();
+    private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
+    // private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
     // private final Telemetry logger = new Telemetry(MaxSpeed);
 
@@ -87,6 +85,18 @@ public class RobotContainer {
     private final DriveForwardCommand m_DriveForwardCommand = new DriveForwardCommand(drivetrain);
 
     public RobotContainer() {
+        // Register named commands for PathPlanner
+        NamedCommands.registerCommand("StartIntake", m_intake.runIntakeCommandAuton());
+
+        NamedCommands.registerCommand("StopIntake", new InstantCommand(() -> {
+            SmartDashboard.putString("Command | Intake", "Stop");
+            m_intake.setIntakePower(0.0);
+            m_intake.setConveyorPower(0.0);
+        }));
+
+        NamedCommands.registerCommand("SlapArmDown", m_intake.runSlapDownCommand());
+        NamedCommands.registerCommand("SlapArmUp",   m_intake.runSlapUpCommand());
+        
         // Configure AutoBuilder for PathPlanner
         AutoBuilder.configure(
             () -> drivetrain.getState().Pose,           // how to get current pose
@@ -107,19 +117,6 @@ public class RobotContainer {
             drivetrain
         );
 
-        // Register named commands for PathPlanner
-        NamedCommands.registerCommand("StartIntake", Commands.runOnce(() -> {
-            m_intake.setIntakePower(IntakeSetpoints.kIntake);
-            m_intake.setConveyorPower(ConveyorSetpoints.kExtake);
-        }));
-
-        NamedCommands.registerCommand("StopIntake", Commands.runOnce(() -> {
-            m_intake.setIntakePower(0.0);
-            m_intake.setConveyorPower(0.0);
-        }));
-
-        NamedCommands.registerCommand("SlapArmDown", m_intake.runSlapDownCommand());
-        NamedCommands.registerCommand("SlapArmUp",   m_intake.runSlapUpCommand());
 
         // Register your path options
         m_useDeferred.setDefaultOption("Improved", true);
@@ -172,6 +169,10 @@ public class RobotContainer {
          /* DRIVER CONTROLS */
 
         m_driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+        
+        // Turn wheels in 'x' shape to act as a brake mechanism
+        m_driverController.rightTrigger(OIConstants.kTriggerButtonThreshold).whileTrue(drivetrain.applyRequest(() -> brake));
+
 
     //     // Left Bumper -> Run tube intake
     //     m_driverController.leftBumper().whileTrue(m_coralSubSystem.runIntakeCommand());
@@ -239,7 +240,6 @@ public class RobotContainer {
 
             String selectedLocation = m_autoLocation.getSelected();
             String selectedStrat = m_autoStrategy.getSelected();
-            // Boolean autoDefault = m_autoDefault.getSelected();
 
             Double timeToShoot = m_timeToShoot.getSelected();
 
@@ -254,12 +254,6 @@ public class RobotContainer {
             }
 
             String selectedPath = "Blue" + selectedLocation + selectedStrat;
-            String nextPath = "";
-
-            // if (Boolean.TRUE.equals(autoDefault)) {
-            //     System.out.println("Overriding path with default path");
-            //     selectedPath = "Blue" + selectedLocation + "Default";
-            // }
 
             Boolean usingDefault = selectedStrat.equals("Default");
 
@@ -276,56 +270,38 @@ public class RobotContainer {
                 offset = 1.0;
             }
 
+            Command orientBotCommand = orientBotCommand();
             Command driveBackwardCommand = driveBackwardCommand(offset, useDeferred);
 
             return new SequentialCommandGroup(
-                // Step 0: Bootstrap pose from MegaTag1 so gyro is correct before pathfinding
-                Commands.run(() -> {
-                    LimelightHelpers.SetRobotOrientation("limelight-robot", drivetrain.getState().Pose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
-                    PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-robot");
-                    if (LimelightHelpers.validPoseEstimate(mt1)) {
-                        System.out.println("[Localize] Got fix! X=" + mt1.pose.getX() + " Y=" + mt1.pose.getY() + ", Deg=" + mt1.pose.getRotation().getDegrees());
-                        drivetrain.resetPose(mt1.pose);
-                        drivetrain.setPoseBootstrapped(true);
-                    } else {
-                        System.out.println("[Localize] No valid estimate yet... tagCount=" + (mt1 != null ? mt1.tagCount : "null"));
-                    }
-                }, drivetrain).until(() -> 
-                    LimelightHelpers.validPoseEstimate(LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-robot"))
-                ).withTimeout(2.0),
+                // Step 0: Clear April Tag filters and Bootstrap pose from MegaTag1 so gyro is correct before pathfinding
+                Commands.runOnce(() -> LimelightHelpers.SetFiducialIDFiltersOverride("limelight-robot", new int[]{})),
+                orientBotCommand,
+                // Step 1: Drive back 1 meter to avoid crashing sideways into trench/ramp wall
                 driveBackwardCommand,
-                // Step 1: Bootstrap pose from Strategy - ONLY trenches allowed!!!
-                // drivetrain.runOnce(() -> {
-                //     SmartDashboard.putString("Starting Position", startingPosition.toString());
-                //     drivetrain.resetPose(startingPosition);
-                // }),
-                // Step 2: Drive to shoot position
+                // Step 2: Drive to target shooting position
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Driving to shoot position")),
                 AutoBuilder.pathfindToPoseFlipped(targetPosition, DriveToPoseCommand.CONSTRAINTS),
+
+                // Step 3.1: Optionally align to Hub based on april tags
+                // Filters for hub tags, centers the bot on them, clears filters
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Optional Alignment")),
+                getAlignCommand(),
 
-                // // Step 3: Shoot preloaded fuel
-                Boolean.TRUE.equals(m_alignToHub.getSelected()) ? alignToHubCommand() : Commands.none(),
-                Commands.runOnce(() -> LimelightHelpers.SetFiducialIDFiltersOverride("limelight-robot", new int[]{})),
-                // drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Shooting")),
-                // m_shooter.runShooterCommand().withTimeout(timeToShoot).deadlineWith(m_intake.runIntakeCommand()),
-
-                // // Step 4: Always run the selected path (intake via event markers)
-                // drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Running path2")),
-                // AutoBuilder.pathfindThenFollowPath(path, DriveToPoseCommand.CONSTRAINTS),
-                Commands.runOnce(() -> LimelightHelpers.SetFiducialIDFiltersOverride("limelight-robot", new int[]{})),
+                // Step 3.2 Shoot preloaded fuel
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Shooting")),
                 m_shooter.runShooterCommand().withTimeout(timeToShoot).deadlineWith(m_intake.runIntakeCommand()),
+
+                // Step 4: Always run the selected path (intake and slap arm via event markers)
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Running Path")),
                 AutoBuilder.pathfindThenFollowPath(path, DriveToPoseCommand.CONSTRAINTS),
-                drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Done with path")),
 
                 // Step 5: Shoot again only if Alpha/Bravo strategy (not default)
+                drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Done with path")),
                 Boolean.FALSE.equals(usingDefault)
                     ? new SequentialCommandGroup(
                         drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Shooting again")),
-                        Boolean.TRUE.equals(m_alignToHub.getSelected()) ? alignToHubCommand() : Commands.none(),
-                        Commands.runOnce(() -> LimelightHelpers.SetFiducialIDFiltersOverride("limelight-robot", new int[]{})),
+                        getAlignCommand(),
                         m_shooter.runShooterCommand().withTimeout(timeToShoot * 2).deadlineWith(m_intake.runIntakeCommand())
                     )
                     : Commands.none(),
@@ -337,6 +313,22 @@ public class RobotContainer {
             e.printStackTrace();
             return m_DriveForwardCommand;
         }
+    }
+
+    public Command orientBotCommand() {
+        return Commands.run(() -> {
+                    LimelightHelpers.SetRobotOrientation("limelight-robot", drivetrain.getState().Pose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
+                    PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-robot");
+                    if (LimelightHelpers.validPoseEstimate(mt1)) {
+                        System.out.println("[Localize] Got fix! X=" + mt1.pose.getX() + " Y=" + mt1.pose.getY() + ", Deg=" + mt1.pose.getRotation().getDegrees());
+                        drivetrain.resetPose(mt1.pose);
+                        drivetrain.setPoseBootstrapped(true);
+                    } else {
+                        System.out.println("[Localize] No valid estimate yet... tagCount=" + (mt1 != null ? mt1.tagCount : "null"));
+                    }
+                }, drivetrain).until(() -> 
+                    LimelightHelpers.validPoseEstimate(LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-robot"))
+                ).withTimeout(2.0);
     }
 
     /**
@@ -369,6 +361,10 @@ public class RobotContainer {
                                                           ), 
                                                 DriveToPoseCommand.CONSTRAINTS);
         }
+    }
+
+    private Command getAlignCommand() {
+        return Boolean.TRUE.equals(m_alignToHub.getSelected()) ? alignToHubCommand() : Commands.none();
     }
 
     public Command alignToHubCommand() {

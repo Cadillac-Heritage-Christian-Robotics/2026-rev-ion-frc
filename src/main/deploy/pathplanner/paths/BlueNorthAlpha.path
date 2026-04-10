@@ -76,19 +76,35 @@
       "command": {
         "type": "named",
         "data": {
-          "name": "SlapArmDown"
+          "name": "StartIntake"
         }
       }
     },
     {
       "name": "SlapArmDown",
-      "waypointRelativePos": 0.5790411780383795,
+      "waypointRelativePos": 0.625051738410596,
       "endWaypointRelativePos": null,
-      "command": null
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "SlapArmDown"
+        }
+      }
     },
     {
       "name": "StopIntake",
       "waypointRelativePos": 2.347829658294394,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "StopIntake"
+        }
+      }
+    },
+    {
+      "name": "SlapArmUp",
+      "waypointRelativePos": 2.3755691225165565,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
