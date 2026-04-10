@@ -94,8 +94,8 @@ public class RobotContainer {
             m_intake.setConveyorPower(0.0);
         }));
 
-        NamedCommands.registerCommand("SlapArmDown", m_intake.runSlapDownCommand());
-        NamedCommands.registerCommand("SlapArmUp",   m_intake.runSlapUpCommand());
+        NamedCommands.registerCommand("SlapArmDown", m_intake.runSlapDownCommandAuton());
+        NamedCommands.registerCommand("SlapArmUp",   m_intake.runSlapUpCommandAuton());
         
         // Configure AutoBuilder for PathPlanner
         AutoBuilder.configure(
