@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.4210178674768525,
-        "y": 2.9641048900462965
+        "x": 2.175891583452211,
+        "y": 2.3465049928673327
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.4522721435938117,
-        "y": 1.2291034400434988
+        "x": 1.2071458595691702,
+        "y": 0.611503542864535
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 6.434545355902778,
-        "y": 1.3268596643518515
+        "x": 6.296697627314816,
+        "y": 1.3527102141203704
       },
       "prevControl": {
-        "x": 8.103218026620366,
-        "y": 3.5516472077546295
+        "x": 7.965370298032408,
+        "y": 3.5774977575231484
       },
       "nextControl": {
-        "x": 6.284540637516704,
-        "y": 1.1268632032283739
+        "x": 6.146692908928742,
+        "y": 1.1527137529968927
       },
       "isLocked": false,
       "linkedName": null
@@ -36,24 +36,24 @@
         "y": 4.850210865162037
       },
       "prevControl": {
-        "x": 5.980837530928957,
-        "y": 5.068202040021423
+        "x": 6.002124647458191,
+        "y": 5.081415963528614
       },
       "nextControl": {
-        "x": 8.180507233796297,
-        "y": 1.8728049045138886
+        "x": 8.226697048611111,
+        "y": 1.0873812210648146
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.4210178674768525,
-        "y": 2.9641048900462965
+        "x": 2.175891583452211,
+        "y": 2.3465049928673327
       },
       "prevControl": {
-        "x": 0.8929485677083342,
-        "y": 2.0866296296296296
+        "x": 0.6478222836836927,
+        "y": 1.4690297324506658
       },
       "nextControl": null,
       "isLocked": false,
@@ -73,6 +73,12 @@
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [
+    {
+      "name": "SlapArmDown",
+      "waypointRelativePos": 0.6209688166311302,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
     {
       "name": "StartIntake",
       "waypointRelativePos": 0.6328374866737739,
@@ -106,13 +112,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 34.58359898216741
+    "rotation": 29.248826336546998
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 34.46055890105679
+    "rotation": 28.381659100422898
   },
   "useDefaultConstraints": true
 }

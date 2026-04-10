@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.4304001736111114,
-        "y": 5.131811270254629
+        "x": 2.344094151212553,
+        "y": 5.244764621968616
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.5069381501421928,
-        "y": 6.745899536744099
+        "x": 1.4206321277436342,
+        "y": 6.8588528884580855
       },
       "isLocked": false,
       "linkedName": null
@@ -48,12 +48,12 @@
     },
     {
       "anchor": {
-        "x": 2.4304001736111114,
-        "y": 5.131811270254629
+        "x": 2.344094151212553,
+        "y": 5.244764621968616
       },
       "prevControl": {
-        "x": 1.7988987991898155,
-        "y": 6.370800564236111
+        "x": 1.712592776791257,
+        "y": 6.483753915950098
       },
       "nextControl": null,
       "isLocked": false,
@@ -85,6 +85,12 @@
       }
     },
     {
+      "name": "SlapArmDown",
+      "waypointRelativePos": 0.6591984275053306,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
       "name": "StopIntake",
       "waypointRelativePos": 2.42403218283582,
       "endWaypointRelativePos": null,
@@ -106,7 +112,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -28.730509514293164
+    "rotation": -28.379243086107937
   },
   "reversed": false,
   "folder": null,
