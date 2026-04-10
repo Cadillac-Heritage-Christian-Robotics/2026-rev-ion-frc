@@ -100,8 +100,18 @@ public class IntakeSubsystem extends SubsystemBase {
         }).withName("Intaking");
   }
 
+  public Command runIntakeCommandAuton() {
+    return new InstantCommand(() -> {
+            SmartDashboard.putString("Command | Intake", "Start");
+            this.setIntakePower(IntakeSetpoints.kIntake);
+            this.setConveyorPower(ConveyorSetpoints.kExtake);
+        }, this);
+  }
+
   public Command runSlapUpCommand() {
-    return new InstantCommand(() -> {this.setSlapPosition(0.3);});
+    return new InstantCommand(() -> {
+      SmartDashboard.putString("Command | Slap", "Up");
+      this.setSlapPosition(0.3);});
     }
 
    public Command runSlapDownCommand() {

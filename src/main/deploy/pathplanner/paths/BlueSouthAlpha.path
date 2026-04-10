@@ -75,13 +75,7 @@
   "eventMarkers": [
     {
       "name": "SlapArmDown",
-      "waypointRelativePos": 0.552755197228145,
-      "endWaypointRelativePos": null,
-      "command": null
-    },
-    {
-      "name": "StartIntake",
-      "waypointRelativePos": 0.5624999999999999,
+      "waypointRelativePos": 0.5710368377483444,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -91,8 +85,30 @@
       }
     },
     {
+      "name": "StartIntake",
+      "waypointRelativePos": 0.589546254139073,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "StartIntake"
+        }
+      }
+    },
+    {
       "name": "StopIntake",
       "waypointRelativePos": 2.347829658294394,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "StopIntake"
+        }
+      }
+    },
+    {
+      "name": "SlapArmUp",
+      "waypointRelativePos": 2.40339145281457,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
