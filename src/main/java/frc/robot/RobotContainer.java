@@ -7,6 +7,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.*;
 
 import java.io.IOException;
+import java.util.Set;
 import java.util.concurrent.BlockingDeque;
 
 import org.json.simple.parser.ParseException;
@@ -21,6 +22,8 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.FileVersionException;
 
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Constants.IntakeSubsystemConstants.ConveyorSetpoints;
+import frc.robot.Constants.IntakeSubsystemConstants.IntakeSetpoints;
 import frc.robot.Constants.OIConstants;
 import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.commands.DriveForwardCommand;
@@ -42,7 +45,7 @@ import frc.robot.subsystems.ShooterSubsystem;
 public class RobotContainer {
 
     // The robot's subsystems and commands are defined here...
-    // private final SendableChooser<Boolean> m_autoDefault = new SendableChooser<>();
+    private final SendableChooser<Boolean> m_useDeferred = new SendableChooser<>();
 
     private final SendableChooser<String> m_autoLocation = new SendableChooser<>();
     private final SendableChooser<String> m_autoStrategy = new SendableChooser<>();
@@ -105,14 +108,22 @@ public class RobotContainer {
         );
 
         // Register named commands for PathPlanner
-        NamedCommands.registerCommand("StartIntake", m_intake.runIntakeCommand());
-        NamedCommands.registerCommand("StopIntake",  m_intake.runOnce(() -> {}));
+        NamedCommands.registerCommand("StartIntake", Commands.runOnce(() -> {
+            m_intake.setIntakePower(IntakeSetpoints.kIntake);
+            m_intake.setConveyorPower(ConveyorSetpoints.kExtake);
+        }));
+
+        NamedCommands.registerCommand("StopIntake", Commands.runOnce(() -> {
+            m_intake.setIntakePower(0.0);
+            m_intake.setConveyorPower(0.0);
+        }));
 
         NamedCommands.registerCommand("SlapArmDown", m_intake.runSlapDownCommand());
         NamedCommands.registerCommand("SlapArmUp",   m_intake.runSlapUpCommand());
 
         // Register your path options
-        // var alliance = DriverStation.getAlliance();
+        m_useDeferred.setDefaultOption("Improved", true);
+        m_useDeferred.addOption("Existing", false);
 
         m_autoLocation.setDefaultOption("North", "North");
         m_autoLocation.addOption("South", "South");
@@ -122,7 +133,7 @@ public class RobotContainer {
         m_autoStrategy.addOption("Bravo", "Bravo");
 
         // Push it to SmartDashboard so drive team can see it
-        // SmartDashboard.putString("Alliance Color", alliance.get().name());
+        SmartDashboard.putData("Drive Backward Strategy", m_useDeferred);
         SmartDashboard.putData("Starting Location", m_autoLocation);
         SmartDashboard.putData("Auton Strategy", m_autoStrategy);
 
@@ -222,7 +233,10 @@ public class RobotContainer {
              * Stratergy = "Alpha" or "Bravo"
              * The default Strategy is "RedNorthAlpha"
             **/
-            // String selectedColor = m_autoColor.getSelected();
+            drivetrain.setPoseBootstrapped(false);
+
+            Boolean useDeferred = m_useDeferred.getSelected();
+
             String selectedLocation = m_autoLocation.getSelected();
             String selectedStrat = m_autoStrategy.getSelected();
             // Boolean autoDefault = m_autoDefault.getSelected();
@@ -262,6 +276,8 @@ public class RobotContainer {
                 offset = 1.0;
             }
 
+            Command driveBackwardCommand = driveBackwardCommand(offset, useDeferred);
+
             return new SequentialCommandGroup(
                 // Step 0: Bootstrap pose from MegaTag1 so gyro is correct before pathfinding
                 Commands.run(() -> {
@@ -270,13 +286,14 @@ public class RobotContainer {
                     if (LimelightHelpers.validPoseEstimate(mt1)) {
                         System.out.println("[Localize] Got fix! X=" + mt1.pose.getX() + " Y=" + mt1.pose.getY() + ", Deg=" + mt1.pose.getRotation().getDegrees());
                         drivetrain.resetPose(mt1.pose);
+                        drivetrain.setPoseBootstrapped(true);
                     } else {
                         System.out.println("[Localize] No valid estimate yet... tagCount=" + (mt1 != null ? mt1.tagCount : "null"));
                     }
                 }, drivetrain).until(() -> 
                     LimelightHelpers.validPoseEstimate(LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-robot"))
                 ).withTimeout(2.0),
-                AutoBuilder.pathfindToPose(new Pose2d(drivetrain.getState().Pose.getX() + offset, drivetrain.getState().Pose.getY(), drivetrain.getState().Pose.getRotation()), DriveToPoseCommand.CONSTRAINTS),
+                driveBackwardCommand,
                 // Step 1: Bootstrap pose from Strategy - ONLY trenches allowed!!!
                 // drivetrain.runOnce(() -> {
                 //     SmartDashboard.putString("Starting Position", startingPosition.toString());
@@ -321,6 +338,39 @@ public class RobotContainer {
             return m_DriveForwardCommand;
         }
     }
+
+    /**
+     * We want to drive backward 1 meter.
+     * Existing logic that worked in sim and practice field was to simply pathFindToPose
+     * 
+     * However in real field on Red alliance we were facing the wrong way and drove the wrong way
+     * 
+     * If we useDeferred in our shuffleboard then we will delay this command until we have a valid pose estimate during auton
+     * 
+     * This function is merely to offer the option as we have not battle tested it yet
+     * @param offset
+     * @param useDeferred
+     * @return
+     */
+    public Command driveBackwardCommand(final double offset, final boolean useDeferred) {
+        if (useDeferred) {
+            return Commands.defer(() -> 
+                AutoBuilder.pathfindToPose(new Pose2d(
+                    drivetrain.getState().Pose.getX() + offset,
+                    drivetrain.getState().Pose.getY(),
+                    drivetrain.getState().Pose.getRotation()
+                ), DriveToPoseCommand.CONSTRAINTS),
+                Set.of(drivetrain)
+            );
+        } else {
+            return  AutoBuilder.pathfindToPose(new Pose2d(drivetrain.getState().Pose.getX() + offset,
+                                                          drivetrain.getState().Pose.getY(), 
+                                                          drivetrain.getState().Pose.getRotation()
+                                                          ), 
+                                                DriveToPoseCommand.CONSTRAINTS);
+        }
+    }
+
     public Command alignToHubCommand() {
         // Determine which tags to use based on alliance
         boolean isRed = DriverStation.getAlliance()

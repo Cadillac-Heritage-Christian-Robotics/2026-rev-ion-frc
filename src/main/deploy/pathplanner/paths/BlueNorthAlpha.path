@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.938,
-        "y": 4.808
+        "x": 2.4983070746527782,
+        "y": 5.018305049189815
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.083914980827169,
-        "y": 6.08432201197752
+        "x": 2.644222055479947,
+        "y": 6.2946270611673345
       },
       "isLocked": false,
       "linkedName": null
@@ -48,12 +48,12 @@
     },
     {
       "anchor": {
-        "x": 2.9384881365740743,
-        "y": 4.808351345486111
+        "x": 2.4983070746527782,
+        "y": 5.018305049189815
       },
       "prevControl": {
-        "x": 3.880196108217593,
-        "y": 5.815669849537037
+        "x": 3.440015046296297,
+        "y": 6.025623553240741
       },
       "nextControl": null,
       "isLocked": false,
@@ -71,7 +71,7 @@
   "eventMarkers": [
     {
       "name": "StartIntake",
-      "waypointRelativePos": 0.5775919509594882,
+      "waypointRelativePos": 0.574179946192053,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -79,12 +79,6 @@
           "name": "SlapArmDown"
         }
       }
-    },
-    {
-      "name": "SlapArmDown",
-      "waypointRelativePos": 0.5790411780383795,
-      "endWaypointRelativePos": null,
-      "command": null
     },
     {
       "name": "StopIntake",
