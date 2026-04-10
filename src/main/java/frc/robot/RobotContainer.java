@@ -94,8 +94,8 @@ public class RobotContainer {
             m_intake.setConveyorPower(0.0);
         }));
 
-        NamedCommands.registerCommand("SlapArmDown", m_intake.runSlapDownCommand());
-        NamedCommands.registerCommand("SlapArmUp",   m_intake.runSlapUpCommand());
+        NamedCommands.registerCommand("SlapArmDown", m_intake.runSlapDownCommandAuton());
+        NamedCommands.registerCommand("SlapArmUp",   m_intake.runSlapUpCommandAuton());
         
         // Configure AutoBuilder for PathPlanner
         AutoBuilder.configure(
@@ -128,6 +128,7 @@ public class RobotContainer {
         m_autoStrategy.setDefaultOption("Default", "Default");
         m_autoStrategy.addOption("Alpha", "Alpha");
         m_autoStrategy.addOption("Bravo", "Bravo");
+        m_autoStrategy.addOption("Default With Action", "DefaultAction");
 
         // Push it to SmartDashboard so drive team can see it
         SmartDashboard.putData("Drive Backward Strategy", m_useDeferred);

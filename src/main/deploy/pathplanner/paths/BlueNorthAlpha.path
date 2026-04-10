@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.6452730407415763,
-        "y": 6.3270067480688175
+        "x": 6.07211277488426,
+        "y": 5.716925998263889
       },
       "isLocked": false,
       "linkedName": null
@@ -20,12 +20,12 @@
         "y": 6.947123480902778
       },
       "prevControl": {
-        "x": 6.789231822236121,
-        "y": 5.178428324249977
+        "x": 6.501730541087963,
+        "y": 5.303710865162037
       },
       "nextControl": {
-        "x": 7.6791758312498475,
-        "y": 7.17547579199074
+        "x": 7.714329694693256,
+        "y": 7.156299068852514
       },
       "isLocked": false,
       "linkedName": null
@@ -36,12 +36,12 @@
         "y": 4.056323423032407
       },
       "prevControl": {
-        "x": 7.695404685991994,
-        "y": 3.819432464179447
+        "x": 8.1262499184313,
+        "y": 3.571642174024326
       },
       "nextControl": {
-        "x": 6.363620370370371,
-        "y": 6.493295428240741
+        "x": 5.440545789930556,
+        "y": 5.94341355613426
       },
       "isLocked": false,
       "linkedName": null
@@ -52,8 +52,8 @@
         "y": 5.050684736091298
       },
       "prevControl": {
-        "x": 3.4410660315579262,
-        "y": 6.058003240142224
+        "x": 5.495461805555555,
+        "y": 5.715679398148149
       },
       "nextControl": null,
       "isLocked": false,
@@ -62,6 +62,10 @@
   ],
   "rotationTargets": [
     {
+      "waypointRelativePos": 1,
+      "rotationDegrees": -89.89961327922124
+    },
+    {
       "waypointRelativePos": 2,
       "rotationDegrees": -90.56012138024063
     }
@@ -69,6 +73,17 @@
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [
+    {
+      "name": "SlapArmUp",
+      "waypointRelativePos": 0.0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "SlapArmUp"
+        }
+      }
+    },
     {
       "name": "StartIntake",
       "waypointRelativePos": 0.5775919509594882,

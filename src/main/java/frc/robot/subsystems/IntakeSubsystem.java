@@ -80,8 +80,6 @@ public class IntakeSubsystem extends SubsystemBase {
    }
 
   private void setSlapPosition(double position) {
-    SmartDashboard.putNumber("Slap | Position", position);
-
     slapMotorPID.setSetpoint(position);
   }
 
@@ -102,15 +100,25 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public Command runIntakeCommandAuton() {
     return new InstantCommand(() -> {
-            SmartDashboard.putString("Command | Intake", "Start");
             this.setIntakePower(IntakeSetpoints.kIntake);
             this.setConveyorPower(ConveyorSetpoints.kExtake);
         }, this);
   }
 
+  public Command runSlapUpCommandAuton() {
+      return new InstantCommand(() -> {
+          this.setSlapPosition(0.3);
+        }, this);
+  }
+
+  public Command runSlapDownCommandAuton() {
+      return new InstantCommand(() -> {
+        this.setSlapPosition(0.01);
+      }, this);
+  }
+
   public Command runSlapUpCommand() {
     return new InstantCommand(() -> {
-      SmartDashboard.putString("Command | Slap", "Up");
       this.setSlapPosition(0.3);});
     }
 
@@ -137,7 +145,9 @@ public class IntakeSubsystem extends SubsystemBase {
   public void periodic() {
     // Display subsystem values
     SmartDashboard.putNumber("Intake | Intake | Power", intakeMotor.get());
-    SmartDashboard.putNumber("Intake | Slap | Position", slapMotor.getEncoder().getPosition());
+    SmartDashboard.putString("Intake | Slap | Position", slapMotorPID.getSetpoint() >= 0.2 ? "Up" : "Down");
+    SmartDashboard.putNumber("Intake | Slap | Position value", slapMotorPID.getSetpoint());
+
     SmartDashboard.putNumber("Intake | Conveyor | Applied Output", conveyorMotor.getDutyCycle().getValueAsDouble());
 
     slapMotor.setVoltage(MathUtil.clamp(slapMotorPID.calculate(slapMotor.getEncoder().getPosition()), -12, 12));

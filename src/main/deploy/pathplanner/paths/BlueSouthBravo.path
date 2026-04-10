@@ -8,40 +8,40 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.2071458595691702,
-        "y": 0.611503542864535
+        "x": 5.649187282986112,
+        "y": 2.283592447916667
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 6.296697627314816,
-        "y": 1.3527102141203704
+        "x": 6.662935619212964,
+        "y": 1.2802105758101856
       },
       "prevControl": {
-        "x": 7.965370298032408,
-        "y": 3.5774977575231484
+        "x": 7.305026233960442,
+        "y": 2.8222029673631717
       },
       "nextControl": {
-        "x": 6.146692908928742,
-        "y": 1.1527137529968927
+        "x": 6.507373046875,
+        "y": 0.906624204282408
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 6.130899811921297,
-        "y": 4.850210865162037
+        "x": 6.511768952546297,
+        "y": 4.803102502893519
       },
       "prevControl": {
-        "x": 6.002124647458191,
-        "y": 5.081415963528614
+        "x": 6.400865786372634,
+        "y": 5.027157156343645
       },
       "nextControl": {
-        "x": 8.226697048611111,
-        "y": 1.0873812210648146
+        "x": 7.550646122685185,
+        "y": 2.704287181712963
       },
       "isLocked": false,
       "linkedName": null
@@ -52,8 +52,8 @@
         "y": 2.3465049928673327
       },
       "prevControl": {
-        "x": 0.6478222836836927,
-        "y": 1.4690297324506656
+        "x": 6.994006365740741,
+        "y": 2.4356120515046302
       },
       "nextControl": null,
       "isLocked": false,
@@ -74,8 +74,19 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
+      "name": "SlapArmUp",
+      "waypointRelativePos": 0.0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "SlapArmUp"
+        }
+      }
+    },
+    {
       "name": "SlapArmDown",
-      "waypointRelativePos": 0.6209688166311302,
+      "waypointRelativePos": 0.6742161630794703,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -86,7 +97,7 @@
     },
     {
       "name": "StartIntake",
-      "waypointRelativePos": 0.6328374866737739,
+      "waypointRelativePos": 0.6853140521523178,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -96,24 +107,24 @@
       }
     },
     {
-      "name": "StopIntake",
-      "waypointRelativePos": 2.347829658294394,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "StopIntake"
-        }
-      }
-    },
-    {
       "name": "SlapArmUp",
-      "waypointRelativePos": 2.360319225993377,
+      "waypointRelativePos": 2.4977623137417226,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
           "name": "SlapArmUp"
+        }
+      }
+    },
+    {
+      "name": "StopIntake",
+      "waypointRelativePos": 2.5930256622516556,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "StopIntake"
         }
       }
     }

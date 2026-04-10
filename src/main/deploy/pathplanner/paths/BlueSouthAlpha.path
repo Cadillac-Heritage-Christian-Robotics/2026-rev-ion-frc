@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.863152238013968,
-        "y": 1.3317270008686146
+        "x": 3.185118127893519,
+        "y": 2.3948679108796296
       },
       "isLocked": false,
       "linkedName": null
@@ -20,12 +20,12 @@
         "y": 1.5889081307870367
       },
       "prevControl": {
-        "x": 8.052041811342594,
-        "y": 2.804736906828704
+        "x": 8.135903950020309,
+        "y": 2.7685692483480246
       },
       "nextControl": {
-        "x": 7.486503530233782,
-        "y": 1.356023900576646
+        "x": 7.286301287615742,
+        "y": 0.9740062210648148
       },
       "isLocked": false,
       "linkedName": null
@@ -36,12 +36,12 @@
         "y": 4.132431640625
       },
       "prevControl": {
-        "x": 7.677176249152759,
-        "y": 4.39493533117444
+        "x": 8.065426359953703,
+        "y": 4.3380550491898155
       },
       "nextControl": {
-        "x": 8.124344618055556,
-        "y": 0.9039997829861113
+        "x": 5.212691374110667,
+        "y": 2.6839437734021816
       },
       "isLocked": false,
       "linkedName": null
@@ -52,8 +52,8 @@
         "y": 2.6829101283880177
       },
       "prevControl": {
-        "x": 1.2779069947404826,
-        "y": 2.1145260861426474
+        "x": 6.37930128761574,
+        "y": 2.27263548900463
       },
       "nextControl": null,
       "isLocked": false,
@@ -73,6 +73,17 @@
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [
+    {
+      "name": "SlapArmUp",
+      "waypointRelativePos": 0.03476821192052975,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "SlapArmUp"
+        }
+      }
+    },
     {
       "name": "SlapArmDown",
       "waypointRelativePos": 0.5710368377483444,
