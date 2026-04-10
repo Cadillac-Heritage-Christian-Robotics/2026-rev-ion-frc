@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.938,
-        "y": 4.808
+        "x": 2.4993580599144076,
+        "y": 5.050684736091298
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.083914980827169,
-        "y": 6.08432201197752
+        "x": 2.6452730407415763,
+        "y": 6.3270067480688175
       },
       "isLocked": false,
       "linkedName": null
@@ -48,12 +48,12 @@
     },
     {
       "anchor": {
-        "x": 2.9384881365740743,
-        "y": 4.808351345486111
+        "x": 2.4993580599144076,
+        "y": 5.050684736091298
       },
       "prevControl": {
-        "x": 3.880196108217593,
-        "y": 5.815669849537037
+        "x": 3.4410660315579262,
+        "y": 6.058003240142224
       },
       "nextControl": null,
       "isLocked": false,
@@ -76,19 +76,35 @@
       "command": {
         "type": "named",
         "data": {
-          "name": "SlapArmDown"
+          "name": "StartIntake"
         }
       }
     },
     {
       "name": "SlapArmDown",
-      "waypointRelativePos": 0.5790411780383795,
+      "waypointRelativePos": 0.625051738410596,
       "endWaypointRelativePos": null,
-      "command": null
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "SlapArmDown"
+        }
+      }
     },
     {
       "name": "StopIntake",
       "waypointRelativePos": 2.347829658294394,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "StopIntake"
+        }
+      }
+    },
+    {
+      "name": "SlapArmUp",
+      "waypointRelativePos": 2.3755691225165565,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",

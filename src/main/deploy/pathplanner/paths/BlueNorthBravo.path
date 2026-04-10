@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 2.938,
-        "y": 4.808
+        "x": 2.344094151212553,
+        "y": 5.244764621968616
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.0145379765310816,
-        "y": 6.422088266489469
+        "x": 1.420632127743634,
+        "y": 6.8588528884580855
       },
       "isLocked": false,
       "linkedName": null
@@ -48,12 +48,12 @@
     },
     {
       "anchor": {
-        "x": 2.9384881365740743,
-        "y": 4.808351345486111
+        "x": 2.344094151212553,
+        "y": 5.244764621968616
       },
       "prevControl": {
-        "x": 2.3069867621527784,
-        "y": 6.047340639467593
+        "x": 1.712592776791257,
+        "y": 6.483753915950098
       },
       "nextControl": null,
       "isLocked": false,
@@ -74,8 +74,8 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "StartIntake",
-      "waypointRelativePos": 0.6523893837616827,
+      "name": "SlapArmDown",
+      "waypointRelativePos": 0.6591984275053306,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -85,14 +85,30 @@
       }
     },
     {
-      "name": "SlapArmDown",
-      "waypointRelativePos": 0.6591984275053306,
+      "name": "StartIntake",
+      "waypointRelativePos": 0.7112349958609272,
       "endWaypointRelativePos": null,
-      "command": null
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "StartIntake"
+        }
+      }
     },
     {
       "name": "StopIntake",
       "waypointRelativePos": 2.42403218283582,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "StopIntake"
+        }
+      }
+    },
+    {
+      "name": "SlapArmUp",
+      "waypointRelativePos": 2.451508174668875,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -112,7 +128,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -28.730509514293164
+    "rotation": -28.379243086107937
   },
   "reversed": false,
   "folder": null,

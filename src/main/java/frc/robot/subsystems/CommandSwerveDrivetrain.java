@@ -40,6 +40,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     private final Field2d m_field = new Field2d();
 
+    private boolean m_poseBootstrapped = false;
+
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
     private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
     /* Red alliance sees forward as 180 degrees (toward blue alliance wall) */
@@ -51,6 +53,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
     private final SwerveRequest.SysIdSwerveSteerGains m_steerCharacterization = new SwerveRequest.SysIdSwerveSteerGains();
     private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
+
+    public void setPoseBootstrapped(boolean bootstrapped) {
+        m_poseBootstrapped = bootstrapped;
+    }
 
     /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
     private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
@@ -240,6 +246,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     : kBlueAlliancePerspectiveRotation
             );
             m_hasAppliedOperatorPerspective = true;
+
+            // Fix heading using MT1 while disabled so Field2D shows correct orientation
+            PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-robot");
+            if (LimelightHelpers.validPoseEstimate(mt1)) {
+                resetPose(mt1.pose);
+            }
         }
         Pose2d currentPose = getState().Pose;
         // SmartDashboard.putData("Pose", currentPose);
@@ -249,7 +261,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         m_field.setRobotPose(getState().Pose);
 
         // Feed Limelight into odometry
-        if (DriverStation.isAutonomous()) {
+        if (DriverStation.isAutonomous() && m_poseBootstrapped) {
             SmartDashboard.putNumber("LL TX During Align", LimelightHelpers.getTX("limelight-robot"));
             SmartDashboard.putBoolean("LL TV During Align", LimelightHelpers.getTV("limelight-robot"));
 

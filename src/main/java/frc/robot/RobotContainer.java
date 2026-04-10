@@ -7,7 +7,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.*;
 
 import java.io.IOException;
-import java.util.concurrent.BlockingDeque;
+import java.util.Set;
 
 import org.json.simple.parser.ParseException;
 
@@ -21,6 +21,8 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.FileVersionException;
 
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Constants.IntakeSubsystemConstants.ConveyorSetpoints;
+import frc.robot.Constants.IntakeSubsystemConstants.IntakeSetpoints;
 import frc.robot.Constants.OIConstants;
 import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.commands.DriveForwardCommand;
@@ -34,6 +36,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
@@ -42,7 +45,7 @@ import frc.robot.subsystems.ShooterSubsystem;
 public class RobotContainer {
 
     // The robot's subsystems and commands are defined here...
-    // private final SendableChooser<Boolean> m_autoDefault = new SendableChooser<>();
+    private final SendableChooser<Boolean> m_useDeferred = new SendableChooser<>();
 
     private final SendableChooser<String> m_autoLocation = new SendableChooser<>();
     private final SendableChooser<String> m_autoStrategy = new SendableChooser<>();
@@ -67,10 +70,8 @@ public class RobotContainer {
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
             .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
-    // private final SwerveRequest.SwerveDriveBrake brake = new
-    // SwerveRequest.SwerveDriveBrake();
-    // private final SwerveRequest.PointWheelsAt point = new
-    // SwerveRequest.PointWheelsAt();
+    private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
+    // private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
     // private final Telemetry logger = new Telemetry(MaxSpeed);
 
@@ -84,6 +85,18 @@ public class RobotContainer {
     private final DriveForwardCommand m_DriveForwardCommand = new DriveForwardCommand(drivetrain);
 
     public RobotContainer() {
+        // Register named commands for PathPlanner
+        NamedCommands.registerCommand("StartIntake", m_intake.runIntakeCommandAuton());
+
+        NamedCommands.registerCommand("StopIntake", new InstantCommand(() -> {
+            SmartDashboard.putString("Command | Intake", "Stop");
+            m_intake.setIntakePower(0.0);
+            m_intake.setConveyorPower(0.0);
+        }));
+
+        NamedCommands.registerCommand("SlapArmDown", m_intake.runSlapDownCommand());
+        NamedCommands.registerCommand("SlapArmUp",   m_intake.runSlapUpCommand());
+        
         // Configure AutoBuilder for PathPlanner
         AutoBuilder.configure(
             () -> drivetrain.getState().Pose,           // how to get current pose
@@ -104,15 +117,10 @@ public class RobotContainer {
             drivetrain
         );
 
-        // Register named commands for PathPlanner
-        NamedCommands.registerCommand("StartIntake", m_intake.runIntakeCommand());
-        NamedCommands.registerCommand("StopIntake",  m_intake.runOnce(() -> {}));
-
-        NamedCommands.registerCommand("SlapArmDown", m_intake.runSlapDownCommand());
-        NamedCommands.registerCommand("SlapArmUp",   m_intake.runSlapUpCommand());
 
         // Register your path options
-        // var alliance = DriverStation.getAlliance();
+        m_useDeferred.setDefaultOption("Improved", true);
+        m_useDeferred.addOption("Existing", false);
 
         m_autoLocation.setDefaultOption("North", "North");
         m_autoLocation.addOption("South", "South");
@@ -122,7 +130,7 @@ public class RobotContainer {
         m_autoStrategy.addOption("Bravo", "Bravo");
 
         // Push it to SmartDashboard so drive team can see it
-        // SmartDashboard.putString("Alliance Color", alliance.get().name());
+        SmartDashboard.putData("Drive Backward Strategy", m_useDeferred);
         SmartDashboard.putData("Starting Location", m_autoLocation);
         SmartDashboard.putData("Auton Strategy", m_autoStrategy);
 
@@ -161,6 +169,10 @@ public class RobotContainer {
          /* DRIVER CONTROLS */
 
         m_driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+        
+        // Turn wheels in 'x' shape to act as a brake mechanism
+        m_driverController.rightTrigger(OIConstants.kTriggerButtonThreshold).whileTrue(drivetrain.applyRequest(() -> brake));
+
 
     //     // Left Bumper -> Run tube intake
     //     m_driverController.leftBumper().whileTrue(m_coralSubSystem.runIntakeCommand());
@@ -222,10 +234,12 @@ public class RobotContainer {
              * Stratergy = "Alpha" or "Bravo"
              * The default Strategy is "RedNorthAlpha"
             **/
-            // String selectedColor = m_autoColor.getSelected();
+            drivetrain.setPoseBootstrapped(false);
+
+            Boolean useDeferred = m_useDeferred.getSelected();
+
             String selectedLocation = m_autoLocation.getSelected();
             String selectedStrat = m_autoStrategy.getSelected();
-            // Boolean autoDefault = m_autoDefault.getSelected();
 
             Double timeToShoot = m_timeToShoot.getSelected();
 
@@ -240,12 +254,6 @@ public class RobotContainer {
             }
 
             String selectedPath = "Blue" + selectedLocation + selectedStrat;
-            String nextPath = "";
-
-            // if (Boolean.TRUE.equals(autoDefault)) {
-            //     System.out.println("Overriding path with default path");
-            //     selectedPath = "Blue" + selectedLocation + "Default";
-            // }
 
             Boolean usingDefault = selectedStrat.equals("Default");
 
@@ -262,53 +270,38 @@ public class RobotContainer {
                 offset = 1.0;
             }
 
+            Command orientBotCommand = orientBotCommand();
+            Command driveBackwardCommand = driveBackwardCommand(offset, useDeferred);
+
             return new SequentialCommandGroup(
-                // Step 0: Bootstrap pose from MegaTag1 so gyro is correct before pathfinding
-                Commands.run(() -> {
-                    LimelightHelpers.SetRobotOrientation("limelight-robot", drivetrain.getState().Pose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
-                    PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-robot");
-                    if (LimelightHelpers.validPoseEstimate(mt1)) {
-                        System.out.println("[Localize] Got fix! X=" + mt1.pose.getX() + " Y=" + mt1.pose.getY() + ", Deg=" + mt1.pose.getRotation().getDegrees());
-                        drivetrain.resetPose(mt1.pose);
-                    } else {
-                        System.out.println("[Localize] No valid estimate yet... tagCount=" + (mt1 != null ? mt1.tagCount : "null"));
-                    }
-                }, drivetrain).until(() -> 
-                    LimelightHelpers.validPoseEstimate(LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-robot"))
-                ).withTimeout(2.0),
-                AutoBuilder.pathfindToPose(new Pose2d(drivetrain.getState().Pose.getX() + offset, drivetrain.getState().Pose.getY(), drivetrain.getState().Pose.getRotation()), DriveToPoseCommand.CONSTRAINTS),
-                // Step 1: Bootstrap pose from Strategy - ONLY trenches allowed!!!
-                // drivetrain.runOnce(() -> {
-                //     SmartDashboard.putString("Starting Position", startingPosition.toString());
-                //     drivetrain.resetPose(startingPosition);
-                // }),
-                // Step 2: Drive to shoot position
+                // Step 0: Clear April Tag filters and Bootstrap pose from MegaTag1 so gyro is correct before pathfinding
+                Commands.runOnce(() -> LimelightHelpers.SetFiducialIDFiltersOverride("limelight-robot", new int[]{})),
+                orientBotCommand,
+                // Step 1: Drive back 1 meter to avoid crashing sideways into trench/ramp wall
+                driveBackwardCommand,
+                // Step 2: Drive to target shooting position
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Driving to shoot position")),
                 AutoBuilder.pathfindToPoseFlipped(targetPosition, DriveToPoseCommand.CONSTRAINTS),
+
+                // Step 3.1: Optionally align to Hub based on april tags
+                // Filters for hub tags, centers the bot on them, clears filters
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Optional Alignment")),
+                getAlignCommand(),
 
-                // // Step 3: Shoot preloaded fuel
-                Boolean.TRUE.equals(m_alignToHub.getSelected()) ? alignToHubCommand() : Commands.none(),
-                Commands.runOnce(() -> LimelightHelpers.SetFiducialIDFiltersOverride("limelight-robot", new int[]{})),
-                // drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Shooting")),
-                // m_shooter.runShooterCommand().withTimeout(timeToShoot).deadlineWith(m_intake.runIntakeCommand()),
-
-                // // Step 4: Always run the selected path (intake via event markers)
-                // drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Running path2")),
-                // AutoBuilder.pathfindThenFollowPath(path, DriveToPoseCommand.CONSTRAINTS),
-                Commands.runOnce(() -> LimelightHelpers.SetFiducialIDFiltersOverride("limelight-robot", new int[]{})),
+                // Step 3.2 Shoot preloaded fuel
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Shooting")),
                 m_shooter.runShooterCommand().withTimeout(timeToShoot).deadlineWith(m_intake.runIntakeCommand()),
+
+                // Step 4: Always run the selected path (intake and slap arm via event markers)
                 drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Running Path")),
                 AutoBuilder.pathfindThenFollowPath(path, DriveToPoseCommand.CONSTRAINTS),
-                drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Done with path")),
 
                 // Step 5: Shoot again only if Alpha/Bravo strategy (not default)
+                drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Done with path")),
                 Boolean.FALSE.equals(usingDefault)
                     ? new SequentialCommandGroup(
                         drivetrain.runOnce(() -> SmartDashboard.putString("Auton Phase", "Shooting again")),
-                        Boolean.TRUE.equals(m_alignToHub.getSelected()) ? alignToHubCommand() : Commands.none(),
-                        Commands.runOnce(() -> LimelightHelpers.SetFiducialIDFiltersOverride("limelight-robot", new int[]{})),
+                        getAlignCommand(),
                         m_shooter.runShooterCommand().withTimeout(timeToShoot * 2).deadlineWith(m_intake.runIntakeCommand())
                     )
                     : Commands.none(),
@@ -321,6 +314,59 @@ public class RobotContainer {
             return m_DriveForwardCommand;
         }
     }
+
+    public Command orientBotCommand() {
+        return Commands.run(() -> {
+                    LimelightHelpers.SetRobotOrientation("limelight-robot", drivetrain.getState().Pose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
+                    PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-robot");
+                    if (LimelightHelpers.validPoseEstimate(mt1)) {
+                        System.out.println("[Localize] Got fix! X=" + mt1.pose.getX() + " Y=" + mt1.pose.getY() + ", Deg=" + mt1.pose.getRotation().getDegrees());
+                        drivetrain.resetPose(mt1.pose);
+                        drivetrain.setPoseBootstrapped(true);
+                    } else {
+                        System.out.println("[Localize] No valid estimate yet... tagCount=" + (mt1 != null ? mt1.tagCount : "null"));
+                    }
+                }, drivetrain).until(() -> 
+                    LimelightHelpers.validPoseEstimate(LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-robot"))
+                ).withTimeout(2.0);
+    }
+
+    /**
+     * We want to drive backward 1 meter.
+     * Existing logic that worked in sim and practice field was to simply pathFindToPose
+     * 
+     * However in real field on Red alliance we were facing the wrong way and drove the wrong way
+     * 
+     * If we useDeferred in our shuffleboard then we will delay this command until we have a valid pose estimate during auton
+     * 
+     * This function is merely to offer the option as we have not battle tested it yet
+     * @param offset
+     * @param useDeferred
+     * @return
+     */
+    public Command driveBackwardCommand(final double offset, final boolean useDeferred) {
+        if (useDeferred) {
+            return Commands.defer(() -> 
+                AutoBuilder.pathfindToPose(new Pose2d(
+                    drivetrain.getState().Pose.getX() + offset,
+                    drivetrain.getState().Pose.getY(),
+                    drivetrain.getState().Pose.getRotation()
+                ), DriveToPoseCommand.CONSTRAINTS),
+                Set.of(drivetrain)
+            );
+        } else {
+            return  AutoBuilder.pathfindToPose(new Pose2d(drivetrain.getState().Pose.getX() + offset,
+                                                          drivetrain.getState().Pose.getY(), 
+                                                          drivetrain.getState().Pose.getRotation()
+                                                          ), 
+                                                DriveToPoseCommand.CONSTRAINTS);
+        }
+    }
+
+    private Command getAlignCommand() {
+        return Boolean.TRUE.equals(m_alignToHub.getSelected()) ? alignToHubCommand() : Commands.none();
+    }
+
     public Command alignToHubCommand() {
         // Determine which tags to use based on alliance
         boolean isRed = DriverStation.getAlliance()

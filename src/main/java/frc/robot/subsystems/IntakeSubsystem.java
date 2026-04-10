@@ -70,16 +70,18 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   /** Set the intake motor power in the range of [-1, 1]. */
-  private void setIntakePower(double power) {
+  public void setIntakePower(double power) {
     intakeMotor.set(power);
   }
 
   /** Set the conveyor motor power in the range of [-1, 1]. */
-   private void setConveyorPower(double power) {
+   public void setConveyorPower(double power) {
      conveyorMotor.set(power);
    }
 
   private void setSlapPosition(double position) {
+    SmartDashboard.putNumber("Slap | Position", position);
+
     slapMotorPID.setSetpoint(position);
   }
 
@@ -98,12 +100,22 @@ public class IntakeSubsystem extends SubsystemBase {
         }).withName("Intaking");
   }
 
+  public Command runIntakeCommandAuton() {
+    return new InstantCommand(() -> {
+            SmartDashboard.putString("Command | Intake", "Start");
+            this.setIntakePower(IntakeSetpoints.kIntake);
+            this.setConveyorPower(ConveyorSetpoints.kExtake);
+        }, this);
+  }
+
   public Command runSlapUpCommand() {
-    return new InstantCommand(() -> {this.setSlapPosition(0.3);});
+    return new InstantCommand(() -> {
+      SmartDashboard.putString("Command | Slap", "Up");
+      this.setSlapPosition(0.3);});
     }
 
    public Command runSlapDownCommand() {
-    return new InstantCommand(() -> {this.setSlapPosition(0.04);});
+    return new InstantCommand(() -> {this.setSlapPosition(0.001);});
     }
 
   /**
@@ -124,8 +136,9 @@ public class IntakeSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // Display subsystem values
-    SmartDashboard.putNumber("Intake | Intake | Applied Output", intakeMotor.getAppliedOutput());
-    SmartDashboard.putNumber("Intake | Conveyor | Applied Output", conveyorMotor.get());
+    SmartDashboard.putNumber("Intake | Intake | Power", intakeMotor.get());
+    SmartDashboard.putNumber("Intake | Slap | Position", slapMotor.getEncoder().getPosition());
+    SmartDashboard.putNumber("Intake | Conveyor | Applied Output", conveyorMotor.getDutyCycle().getValueAsDouble());
 
     slapMotor.setVoltage(MathUtil.clamp(slapMotorPID.calculate(slapMotor.getEncoder().getPosition()), -12, 12));
   }
